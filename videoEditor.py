@@ -112,6 +112,7 @@ class Window(QWidget):
         if p.x() >20 + 150 and p.x()< 320 and p.y() > 560 and p.y() < 690:
             self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(Model.videoList[1])))
             self.playButton.setEnabled(True)
+        self.videoWidget.show()
     
     def play(self):
         if self.mediaPlayer.state() == QMediaPlayer.PlayingState:
@@ -127,6 +128,8 @@ class Window(QWidget):
         if Model.fname != '':
             Model.videoList.append(Model.fname)
         print(str(len(Model.videoList)))
+        self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(Model.fname)))
+        self.mediaPlayer.play()
         self.createLabel()
         self.update()
 
