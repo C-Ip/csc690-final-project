@@ -1,0 +1,1 @@
+installed opencv “pip install opencv-python
