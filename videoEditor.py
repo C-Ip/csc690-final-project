@@ -85,6 +85,7 @@ class Window(QWidget):
         self.pauseButton = QPushButton("Pause", self)
         self.pauseButton.setStyleSheet("background-color: gray")
         self.pauseButton.move(800, 500)
+        self.pauseButton.clicked.connect(self.pause)
         
 
         # Import files button
@@ -117,7 +118,9 @@ class Window(QWidget):
             self.mediaPlayer.pause()
         else:
             self.mediaPlayer.play()
-            
+    def pause(self):
+        if self.mediaPlayer.state() == QMediaPlayer.PlayingState:
+            self.mediaPlayer.pause()
 
     def importFunction(self):
         Model.fname, _ = QFileDialog.getOpenFileName(self, 'Open file', '../desktop','All files(*.jpeg *.mp4);;Image files(*.jpeg);;Video Files(*.mp4)')
