@@ -25,21 +25,28 @@ class Window(QWidget):
         
         self.mediaPlayer = QMediaPlayer(self)
         self.videoWidget = QVideoWidget(self)
-        self.videoWidget.move(500,20)
-        self.videoWidget.resize(600,400)
-        self.videoWidget.setAspectRatioMode(Qt.IgnoreAspectRatio)
+        self.videoWidget.setGeometry(500,20,600,400)
         
-        
+
         self.mediaPlayer.setVideoOutput(self.videoWidget)
-        
-        self.videoWidget.show()
+        self.videoWidget.setAspectRatioMode(Qt.KeepAspectRatio)
         self.show()
     
 
     def initUI(self):
         self.setWindowTitle(self.title)
         self.setGeometry(100, 50, 1700, 850)
-
+    
+    
+    def createButton(self):
+        Model.buttonList.append(QPushButton(str(len(Model.videoList)),self))
+        Model.buttonList[len(Model.videoList)-1].move(20+(150*(len(Model.videoList)-1)),560)
+        Model.buttonList[len(Model.videoList)-1].resize(150,130)
+        Model.buttonList[len(Model.videoList)-1].setStyleSheet("border: 2px solid black")
+        Model.buttonList[len(Model.videoList)-1].clicked.connect(lambda index:self.timelinetoVid(len(Model.videoList)-1,index))
+        Model.buttonList[len(Model.videoList)-1].show()
+    
+    """
     def createLabel(self):
         Model.importLabel.append(QLabel(self))
         Model.importLabel[len(Model.videoList)-1].setGeometry(20+(150*(len(Model.videoList)-1)),560,150,130)
@@ -48,7 +55,7 @@ class Window(QWidget):
         Model.importLabel[len(Model.videoList)-1].setAlignment(Qt.AlignCenter)
         Model.importLabel[len(Model.videoList)-1].show()
     #QtCore.QObject.connect(Model.importLable[len(Model.videoList)-1],SIGNAL('clicked()'),lambda index:self.timelinetoVid(len(Model.videoList)-1,index))
-    
+    """
     
     def display(self):
         self.displayLabel = QLabel(self)
@@ -101,7 +108,7 @@ class Window(QWidget):
         self.subtitleButton = QPushButton("Subtitle ON/OFF", self)
         self.subtitleButton.setStyleSheet("background-color: gray")
         self.subtitleButton.move(900, 500)
-    
+    """
     def mouseReleaseEvent(self,QMouseEvent):
         p = QMouseEvent.pos()
         if p.x() >20 and p.x()< 170 and p.y() > 560 and p.y() < 690:
@@ -111,7 +118,7 @@ class Window(QWidget):
             self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(Model.videoList[1])))
             self.playButton.setEnabled(True)
         self.videoWidget.show()
-    
+    """
     def play(self):
         if self.mediaPlayer.state() == QMediaPlayer.PlayingState:
             self.mediaPlayer.pause()
@@ -126,10 +133,10 @@ class Window(QWidget):
         if Model.fname != '':
             Model.videoList.append(Model.fname)
         print(str(len(Model.videoList)))
-        self.createLabel()
+        self.createButton()
         self.update()
 
-    def timelinetoVid(self):
+    def timelinetoVid(self,videoI,index):
         print("vid1")
 
 
