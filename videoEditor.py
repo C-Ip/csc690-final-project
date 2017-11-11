@@ -7,6 +7,7 @@ from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QCheckBo
 from PyQt5.QtGui import QPixmap, QImage, QMouseEvent
 from PyQt5.QtCore import Qt, QObject, pyqtSignal, QUrl
 from model import Model
+from functools import partial
 
 
 class Window(QWidget):
@@ -43,7 +44,8 @@ class Window(QWidget):
         Model.buttonList[len(Model.videoList)-1].move(20+(150*(len(Model.videoList)-1)),560)
         Model.buttonList[len(Model.videoList)-1].resize(150,130)
         Model.buttonList[len(Model.videoList)-1].setStyleSheet("border: 2px solid black")
-        Model.buttonList[len(Model.videoList)-1].clicked.connect(lambda index:self.timelinetoVid(len(Model.videoList)-1,index))
+        index = 0
+        Model.buttonList[len(Model.videoList)-1].clicked.connect(partial(self.timelinetoVid, len(Model.videoList)-1))
         Model.buttonList[len(Model.videoList)-1].show()
     
     """
@@ -132,13 +134,14 @@ class Window(QWidget):
         Model.fname, _ = QFileDialog.getOpenFileName(self, 'Open file', '../desktop','All files(*.jpeg *.mp4 *.mov);;Image files(*.jpeg);;Video Files(*.mp4 *.mov)')
         if Model.fname != '':
             Model.videoList.append(Model.fname)
-        print(str(len(Model.videoList)))
         self.createButton()
+        
         self.update()
 
-    def timelinetoVid(self,videoI,index):
+    def timelinetoVid(self,index):
         self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(Model.videoList[index])))
         self.playButton.setEnabled(True)
+    
 
 
     def timelinetoVid2(self):
