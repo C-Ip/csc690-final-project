@@ -137,7 +137,8 @@ class Window(QWidget):
         self.update()
 
     def timelinetoVid(self,videoI,index):
-        print("vid1")
+        self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(Model.videoList[index])))
+        self.playButton.setEnabled(True)
 
 
     def timelinetoVid2(self):
