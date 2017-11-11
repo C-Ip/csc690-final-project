@@ -1,8 +1,5 @@
 #!/usr/bin/python3
-import extendqlabel
-import sys, os, cv2
-from tkinter import filedialog
-from tkinter import *
+import sys, os
 from PyQt5 import QtCore
 from PyQt5.QtMultimedia import QMediaContent,QMediaPlayer
 from PyQt5.QtMultimediaWidgets import QVideoWidget
@@ -10,7 +7,7 @@ from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QCheckBo
 from PyQt5.QtGui import QPixmap, QImage, QMouseEvent
 from PyQt5.QtCore import Qt, QObject, pyqtSignal, QUrl
 from model import Model
-import numpy as np
+
 
 class Window(QWidget):
 
@@ -30,11 +27,12 @@ class Window(QWidget):
         self.videoWidget = QVideoWidget(self)
         self.videoWidget.move(500,20)
         self.videoWidget.resize(600,400)
-        self.videoWidget.show()
+        self.videoWidget.setAspectRatioMode(Qt.IgnoreAspectRatio)
+        
         
         self.mediaPlayer.setVideoOutput(self.videoWidget)
         
-        
+        self.videoWidget.show()
         self.show()
     
 
@@ -124,12 +122,10 @@ class Window(QWidget):
             self.mediaPlayer.pause()
 
     def importFunction(self):
-        Model.fname, _ = QFileDialog.getOpenFileName(self, 'Open file', '../desktop','All files(*.jpeg *.mp4);;Image files(*.jpeg);;Video Files(*.mp4)')
+        Model.fname, _ = QFileDialog.getOpenFileName(self, 'Open file', '../desktop','All files(*.jpeg *.mp4 *.mov);;Image files(*.jpeg);;Video Files(*.mp4 *.mov)')
         if Model.fname != '':
             Model.videoList.append(Model.fname)
         print(str(len(Model.videoList)))
-        self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(Model.fname)))
-        self.mediaPlayer.play()
         self.createLabel()
         self.update()
 
