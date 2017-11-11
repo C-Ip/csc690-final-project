@@ -30,6 +30,7 @@ class Window(QWidget):
         
 
         self.mediaPlayer.setVideoOutput(self.videoWidget)
+        
         self.videoWidget.setAspectRatioMode(Qt.KeepAspectRatio)
         self.show()
     
@@ -70,14 +71,27 @@ class Window(QWidget):
         self.toolbarLabel.setGeometry(20, 450, 1400, 100)
 
     def timeLine(self):
+        
         self.timeLineLabel = QLabel(self)
         self.timeLineLabel.setStyleSheet("border: 2px solid black")
-        self.timeLineLabel.setGeometry(20, 560, 1400, 130)
+        self.timeLineLabel.setGeometry(20, 600, 1400, 130)
 
         # Timeline for subtitles
         self.subTimeLineLabel = QLabel(self)
         self.subTimeLineLabel.setStyleSheet("border: 2px solid black")
-        self.subTimeLineLabel.setGeometry(20, 700, 1400, 80)
+        self.subTimeLineLabel.setGeometry(20, 740, 1400, 80)
+
+    def durationChanged(self, duration):
+        self.seconds = (duration/1000) % 60
+        self.minutes = (duration/60000) % 60
+        self.hours = (duration/3600000) % 24
+        print(duration)
+        self.playTimeLabel = QLabel(self)
+        self.playTimeLabel.setText(str(int(round(self.hours, 0))) + ":" + str(int(round(self.minutes, 0))) + ":" + str(int(round(self.seconds, 0))))
+        self.playTimeLabel.setStyleSheet("font-size: 30px")
+        self.playTimeLabel.move(650, 550)
+        self.playTimeLabel.show()
+        
 
     def createButtons(self):
         # Play button
@@ -86,13 +100,6 @@ class Window(QWidget):
         self.playButton.move(700, 500)
         self.playButton.setEnabled(False)
         self.playButton.clicked.connect(self.play)
-        
-
-        # Pause button
-        self.pauseButton = QPushButton("Pause", self)
-        self.pauseButton.setStyleSheet("background-color: gray")
-        self.pauseButton.move(800, 500)
-        self.pauseButton.clicked.connect(self.pause)
         
 
         # Import files button
@@ -106,10 +113,6 @@ class Window(QWidget):
         self.fullScreenButton.setStyleSheet("background-color: gray")
         self.fullScreenButton.move(1000, 380)
 
-        # Turn on/off subtitle button
-        self.subtitleButton = QPushButton("Subtitle ON/OFF", self)
-        self.subtitleButton.setStyleSheet("background-color: gray")
-        self.subtitleButton.move(900, 500)
     """
     def mouseReleaseEvent(self,QMouseEvent):
         p = QMouseEvent.pos()
@@ -124,11 +127,10 @@ class Window(QWidget):
     def play(self):
         if self.mediaPlayer.state() == QMediaPlayer.PlayingState:
             self.mediaPlayer.pause()
+            self.playButton.setText("Play")
         else:
             self.mediaPlayer.play()
-    def pause(self):
-        if self.mediaPlayer.state() == QMediaPlayer.PlayingState:
-            self.mediaPlayer.pause()
+            self.playButton.setText("Pause")
 
     def importFunction(self):
         Model.fname, _ = QFileDialog.getOpenFileName(self, 'Open file', '../desktop','All files(*.jpeg *.mp4 *.mov);;Image files(*.jpeg);;Video Files(*.mp4 *.mov)')
@@ -141,8 +143,7 @@ class Window(QWidget):
     def timelinetoVid(self,index):
         self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(Model.videoList[index])))
         self.playButton.setEnabled(True)
-    
-
+        self.mediaPlayer.durationChanged.connect(self.durationChanged)
 
     def timelinetoVid2(self):
         print("vid2")
