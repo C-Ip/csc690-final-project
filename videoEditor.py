@@ -11,6 +11,7 @@ from functools import partial
 
 
 class Window(QWidget):
+    totalDuration = 0
 
     def __init__(self):
         super().__init__()
@@ -30,6 +31,7 @@ class Window(QWidget):
         
 
         self.mediaPlayer.setVideoOutput(self.videoWidget)
+        self.mediaPlayer.durationChanged.connect(self.durationChanged)
         
         self.videoWidget.setAspectRatioMode(Qt.KeepAspectRatio)
         self.show()
@@ -82,12 +84,24 @@ class Window(QWidget):
         self.subTimeLineLabel.setGeometry(20, 740, 1400, 80)
 
     def durationChanged(self, duration):
-        self.seconds = (duration/1000) % 60
-        self.minutes = (duration/60000) % 60
-        self.hours = (duration/3600000) % 24
-        print(duration)
-        self.playTimeLabel = QLabel(self)
-        self.playTimeLabel.setText(str(int(round(self.hours, 0))) + ":" + str(int(round(self.minutes, 0))) + ":" + str(int(round(self.seconds, 0))))
+        if Window.totalDuration == 0:
+            self.playTimeLabel = QLabel(self)
+        Window.totalDuration += duration
+        print("Total duration: " + str(Window.totalDuration))
+        self.seconds = int(round((duration/1000) % 60))
+        self.minutes = int(round((duration/60000) % 60))
+        self.hours = int(round((duration/3600000) % 24))
+        print("Duration: " + str(duration))
+        '''
+        if self.hours < 10:
+            self.playTimeLabel.setText("0" + str(self.hours) + ":" + str(self.minutes) + ":" + str(self.seconds))
+        if self.minutes < 10:
+            self.playTimeLabel.setText(str(self.hours) + ":0" + str(self.minutes) + ":" + str(self.seconds))
+        if self.seconds < 10:
+            self.playTimeLabel.setText(str(self.hours) + ":" + str(self.minutes) + ":0" + str(self.seconds))
+        else:
+            self.playTimeLabel.setText(str(self.hours) + ":" + str(self.minutes) + ":" + str(self.seconds))
+        '''
         self.playTimeLabel.setStyleSheet("font-size: 30px")
         self.playTimeLabel.move(650, 550)
         self.playTimeLabel.show()
@@ -143,7 +157,6 @@ class Window(QWidget):
     def timelinetoVid(self,index):
         self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(Model.videoList[index])))
         self.playButton.setEnabled(True)
-        self.mediaPlayer.durationChanged.connect(self.durationChanged)
 
     def timelinetoVid2(self):
         print("vid2")
