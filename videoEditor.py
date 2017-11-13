@@ -176,7 +176,7 @@ class Window(QWidget):
 
     def timeMarks(self):
         self.markers = QLabel(self)
-        self.markers.setGeometry(15, 595, 1405, 30)
+        self.markers.setGeometry(20, 595, 1400, 30)
         self.markers.setStyleSheet("border: 2px solid black")
         self.markValue = 0
         while self.markValue <= 120:
