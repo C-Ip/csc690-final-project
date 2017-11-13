@@ -1,11 +1,11 @@
 #!/usr/bin/python3
-import sys, os
+import sys, os, subprocess, atexit
 from PyQt5 import QtCore
 from PyQt5.QtMultimedia import QMediaContent,QMediaPlayer
 from PyQt5.QtMultimediaWidgets import QVideoWidget
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QCheckBox, QFileDialog
 from PyQt5.QtGui import QPixmap, QImage, QMouseEvent
-from PyQt5.QtCore import Qt, QObject, pyqtSignal, QUrl
+from PyQt5.QtCore import Qt, QObject, pyqtSignal, QUrl, QFileInfo
 from model import Model
 from functools import partial
 
@@ -25,6 +25,7 @@ class Window(QWidget):
         self.createButtons()
         self.timeMarks()
         self.importBox()
+        self.importPreviewBox()
         #self.createLabel()
         
         self.mediaPlayer = QMediaPlayer(self)
@@ -37,6 +38,10 @@ class Window(QWidget):
         
         self.videoWidget.setAspectRatioMode(Qt.KeepAspectRatio)
         self.show()
+    
+    
+    
+    
     
 
     def initUI(self):
@@ -57,14 +62,21 @@ class Window(QWidget):
     def importBox(self):
         self.importBoxLabel = QLabel(self)
         self.importBoxLabel.setStyleSheet("border: 2px solid black")
-        self.importBoxLabel.setGeometry(20,20,600,400)
+        self.importBoxLabel.setGeometry(20,20,300,400)
 
     def importBoxList(self,fname):
-        Model.importList.append(QLabel(self))
-        Model.importList[len(Model.importList)-1].setText(str(len(Model.importList)-1)+". "+str(fname))
-        Model.importList[len(Model.importList)-1].setAlignment(Qt.AlignCenter)
-        Model.importList[len(Model.importList)-1].setGeometry(20,20+(20*(len(Model.importList)-1)),600,20)
-        Model.importList[len(Model.importList)-1].show()
+        Model.importList.append(QPushButton("",self))
+        Model.importList[len(Model.videoList)-1].setStyleSheet("border: 2px solid black")
+        Model.importList[len(Model.videoList)-1].setText(str(len(Model.importList)-1)+". "+str(fname))
+        Model.importList[len(Model.videoList)-1].setGeometry(20,20+(20*(len(Model.videoList)-1)),300,20)
+        Model.importList[len(Model.videoList)-1].clicked.connect(partial(self.importClicked, len(Model.videoList)-1))
+        Model.importList[len(Model.videoList)-1].show()
+    
+    def importPreviewBox(self):
+        self.previewBox = QLabel(self)
+        self.previewBox.setStyleSheet("Border: 2px solid black")
+        self.previewBox.setGeometry(320,20,300,400)
+    
     
     """
     def createLabel(self):
@@ -165,8 +177,25 @@ class Window(QWidget):
         Model.fname, _ = QFileDialog.getOpenFileName(self, 'Open file', '../desktop','All files(*.jpeg *.mp4 *.mov);;Image files(*.jpeg);;Video Files(*.mp4 *.mov)')
         if Model.fname != '':
             Model.videoList.append(Model.fname)
+        
+        fi = QFileInfo(Model.fname)
+        base = fi.completeBaseName()
         self.createButton()
-        self.importBoxList(fi)
+        self.importBoxList(base)
+        
+        
+        self.file = open('text.txt','w+')
+        for item in Model.videoList:
+            self.file.write("file "+"'" + "%s'\n" %item)
+        #print (str(item))
+        self.file.close()
+        
+        
+        ffmpeg_command = ["ffmpeg","-y","-f","concat","-safe","0","-i","text.txt","-vf","scale=1280:720","-acodec","copy","output.mp4"]
+        p = subprocess.Popen(ffmpeg_command,stdout=subprocess.PIPE)
+        out1,err1 = p.communicate()
+        
+        
         self.update()
 
     def timelinetoVid(self,index):
@@ -174,16 +203,28 @@ class Window(QWidget):
         if(self.playButton.text() == "Pause"):
             self.playButton.setText("Play")
         self.playButton.setEnabled(True)
+        
+
+
         for i in range(len(Model.buttonList)):
             Model.buttonList[i].setStyleSheet("border: 2px solid black")
         Model.buttonList[index].setStyleSheet("border: 2px solid red")
+       
+
+
+    def importClicked(self,index):
+        for i in range(len(Model.importList)):
+            Model.importList[i].setStyleSheet("border: 2px solid black")
+        Model.importList[index].setStyleSheet("border: 2px solid red")
+            
+            
 
     def timelinetoVid2(self):
         print("vid2")
 
     def timeMarks(self):
         self.markers = QLabel(self)
-        self.markers.setGeometry(15, 595, 1405, 30)
+        self.markers.setGeometry(20, 595, 1400, 30)
         self.markers.setStyleSheet("border: 2px solid black")
         self.markValue = 0
         while self.markValue <= 120:
@@ -195,6 +236,15 @@ class Window(QWidget):
             self.markerLabel.setText(str(self.markValue) + "\n" + "|")
             self.markerLabel.setStyleSheet("font: 20px")
             self.markValue += 5
+
+
+
+    #deletes videolist file on exit
+    @atexit.register
+    def goodbye():
+        file = open('text.txt','w+')
+        file.truncate()
+        os.remove('output.mp4')
             
 if __name__ == '__main__':
     app = QApplication(sys.argv)

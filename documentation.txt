@@ -1,1 +1,2 @@
 installed opencv “pip install opencv-python
+installed ffmpeg, brew install ffmpeg
