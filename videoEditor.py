@@ -58,6 +58,13 @@ class Window(QWidget):
         self.importBoxLabel = QLabel(self)
         self.importBoxLabel.setStyleSheet("border: 2px solid black")
         self.importBoxLabel.setGeometry(20,20,600,400)
+
+    def importBoxList(self,fname):
+        Model.importList.append(QLabel(self))
+        Model.importList[len(Model.importList)-1].setText(str(len(Model.importList)-1)+". "+str(fname))
+        Model.importList[len(Model.importList)-1].setAlignment(Qt.AlignCenter)
+        Model.importList[len(Model.importList)-1].setGeometry(20,20+(20*(len(Model.importList)-1)),600,20)
+        Model.importList[len(Model.importList)-1].show()
     
     """
     def createLabel(self):
@@ -95,11 +102,11 @@ class Window(QWidget):
         if Window.totalDuration == 0:
             self.playTimeLabel = QLabel(self)
         Window.totalDuration += duration
-        print("Total duration: " + str(Window.totalDuration))
+        #print("Total duration: " + str(Window.totalDuration))
         self.seconds = int(round((duration/1000) % 60))
         self.minutes = int(round((duration/60000) % 60))
         self.hours = int(round((duration/3600000) % 24))
-        print("Duration: " + str(duration))
+        #print("Duration: " + str(duration))
         '''
         if self.hours < 10:
             self.playTimeLabel.setText("0" + str(self.hours) + ":" + str(self.minutes) + ":" + str(self.seconds))
@@ -159,7 +166,7 @@ class Window(QWidget):
         if Model.fname != '':
             Model.videoList.append(Model.fname)
         self.createButton()
-        
+        self.importBoxList(fi)
         self.update()
 
     def timelinetoVid(self,index):
