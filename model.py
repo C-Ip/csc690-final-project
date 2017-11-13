@@ -14,3 +14,4 @@ class Model(QWidget):
     videoList = []
     fname = None
     buttonList = []
+    importList = []
