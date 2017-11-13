@@ -23,6 +23,7 @@ class Window(QWidget):
         self.toolbar()
         self.timeLine()
         self.createButtons()
+        self.timeMarks()
         #self.createLabel()
         
         self.mediaPlayer = QMediaPlayer(self)
@@ -156,11 +157,16 @@ class Window(QWidget):
 
     def timelinetoVid(self,index):
         self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(Model.videoList[index])))
+        if(self.playButton.text() == "Pause"):
+            self.playButton.setText("Play")
         self.playButton.setEnabled(True)
 
     def timelinetoVid2(self):
         print("vid2")
 
+    def timeMarks(self):
+        self.markValue = 0
+        
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
