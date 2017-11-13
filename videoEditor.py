@@ -184,14 +184,14 @@ class Window(QWidget):
         self.importBoxList(base)
         
         
-        self.file = open('text.txt','w+')
+        self.file = open('bin/text.txt','w+')
         for item in Model.videoList:
             self.file.write("file "+"'" + "%s'\n" %item)
         #print (str(item))
         self.file.close()
         
         
-        ffmpeg_command = ["ffmpeg","-y","-f","concat","-safe","0","-i","text.txt","-vf","scale=1280:720","-acodec","copy","output.mp4"]
+        ffmpeg_command = ["ffmpeg","-y","-f","concat","-safe","0","-i","bin/text.txt","-vf","scale=1280:720","-acodec","copy","bin/output.mp4"]
         p = subprocess.Popen(ffmpeg_command,stdout=subprocess.PIPE)
         out1,err1 = p.communicate()
         
@@ -242,9 +242,9 @@ class Window(QWidget):
     #deletes videolist file on exit
     @atexit.register
     def goodbye():
-        file = open('text.txt','w+')
+        file = open('bin/text.txt','w+')
         file.truncate()
-        os.remove('output.mp4')
+        os.remove('bin/output.mp4')
             
 if __name__ == '__main__':
     app = QApplication(sys.argv)
