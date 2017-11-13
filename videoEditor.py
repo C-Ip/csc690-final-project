@@ -24,11 +24,12 @@ class Window(QWidget):
         self.timeLine()
         self.createButtons()
         self.timeMarks()
+        self.importBox()
         #self.createLabel()
         
         self.mediaPlayer = QMediaPlayer(self)
         self.videoWidget = QVideoWidget(self)
-        self.videoWidget.setGeometry(500,20,600,400)
+        self.videoWidget.setGeometry(700,20,600,400)
         
 
         self.mediaPlayer.setVideoOutput(self.videoWidget)
@@ -40,17 +41,23 @@ class Window(QWidget):
 
     def initUI(self):
         self.setWindowTitle(self.title)
-        self.setGeometry(100, 50, 1700, 850)
+        self.setGeometry(100, 50, 1700, 900)
     
     
     def createButton(self):
         Model.buttonList.append(QPushButton(str(len(Model.videoList)),self))
-        Model.buttonList[len(Model.videoList)-1].move(20+(150*(len(Model.videoList)-1)),600)
+        Model.buttonList[len(Model.videoList)-1].move(20+(150*(len(Model.videoList)-1)),625)
         Model.buttonList[len(Model.videoList)-1].resize(150,130)
         Model.buttonList[len(Model.videoList)-1].setStyleSheet("border: 2px solid black")
         index = 0
         Model.buttonList[len(Model.videoList)-1].clicked.connect(partial(self.timelinetoVid, len(Model.videoList)-1))
         Model.buttonList[len(Model.videoList)-1].show()
+    
+    
+    def importBox(self):
+        self.importBoxLabel = QLabel(self)
+        self.importBoxLabel.setStyleSheet("border: 2px solid black")
+        self.importBoxLabel.setGeometry(20,20,600,400)
     
     """
     def createLabel(self):
@@ -66,7 +73,7 @@ class Window(QWidget):
     def display(self):
         self.displayLabel = QLabel(self)
         self.displayLabel.setStyleSheet("border: 2px solid black")
-        self.displayLabel.setGeometry(500, 20, 600, 400)
+        self.displayLabel.setGeometry(700, 20, 600, 400)
 
     def toolbar(self):
         self.toolbarLabel = QLabel(self)
@@ -77,12 +84,12 @@ class Window(QWidget):
         
         self.timeLineLabel = QLabel(self)
         self.timeLineLabel.setStyleSheet("border: 2px solid black")
-        self.timeLineLabel.setGeometry(20, 600, 1400, 130)
+        self.timeLineLabel.setGeometry(20, 625, 1400, 130)
 
         # Timeline for subtitles
         self.subTimeLineLabel = QLabel(self)
         self.subTimeLineLabel.setStyleSheet("border: 2px solid black")
-        self.subTimeLineLabel.setGeometry(20, 740, 1400, 80)
+        self.subTimeLineLabel.setGeometry(20, 770, 1400, 80)
 
     def durationChanged(self, duration):
         if Window.totalDuration == 0:
@@ -160,14 +167,28 @@ class Window(QWidget):
         if(self.playButton.text() == "Pause"):
             self.playButton.setText("Play")
         self.playButton.setEnabled(True)
+        for i in range(len(Model.buttonList)):
+            Model.buttonList[i].setStyleSheet("border: 2px solid black")
+        Model.buttonList[index].setStyleSheet("border: 2px solid red")
 
     def timelinetoVid2(self):
         print("vid2")
 
     def timeMarks(self):
+        self.markers = QLabel(self)
+        self.markers.setGeometry(15, 595, 1405, 30)
+        self.markers.setStyleSheet("border: 2px solid black")
         self.markValue = 0
-        
-
+        while self.markValue <= 120:
+            self.markerLabel = QLabel(self)
+            if self.markValue == 0:
+                self.markerLabel.move(20, 600)
+            else:
+                self.markerLabel.move(20 + (self.markValue * 11), 600)
+            self.markerLabel.setText(str(self.markValue) + "\n" + "|")
+            self.markerLabel.setStyleSheet("font: 20px")
+            self.markValue += 5
+            
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     browse = Window()
