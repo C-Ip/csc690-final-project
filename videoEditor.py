@@ -44,7 +44,7 @@ class Window(QWidget):
     
     def createButton(self):
         Model.buttonList.append(QPushButton(str(len(Model.videoList)),self))
-        Model.buttonList[len(Model.videoList)-1].move(20+(150*(len(Model.videoList)-1)),560)
+        Model.buttonList[len(Model.videoList)-1].move(20+(150*(len(Model.videoList)-1)),600)
         Model.buttonList[len(Model.videoList)-1].resize(150,130)
         Model.buttonList[len(Model.videoList)-1].setStyleSheet("border: 2px solid black")
         index = 0
@@ -100,9 +100,9 @@ class Window(QWidget):
         if self.seconds < 10:
             self.playTimeLabel.setText(str(self.hours) + ":" + str(self.minutes) + ":0" + str(self.seconds))
         else:
-            self.playTimeLabel.setText(str(self.hours) + ":" + str(self.minutes) + ":" + str(self.seconds))
         '''
-        self.playTimeLabel.setStyleSheet("font-size: 30px")
+        self.playTimeLabel.setText(str(self.hours) + ":" + str(self.minutes) + ":" + str(self.seconds))
+        self.playTimeLabel.setStyleSheet("font-size: 40px")
         self.playTimeLabel.move(650, 550)
         self.playTimeLabel.show()
         
