@@ -23,11 +23,12 @@ class Window(QWidget):
         self.toolbar()
         self.timeLine()
         self.createButtons()
+        self.importBox()
         #self.createLabel()
         
         self.mediaPlayer = QMediaPlayer(self)
         self.videoWidget = QVideoWidget(self)
-        self.videoWidget.setGeometry(500,20,600,400)
+        self.videoWidget.setGeometry(700,20,600,400)
         
 
         self.mediaPlayer.setVideoOutput(self.videoWidget)
@@ -51,6 +52,12 @@ class Window(QWidget):
         Model.buttonList[len(Model.videoList)-1].clicked.connect(partial(self.timelinetoVid, len(Model.videoList)-1))
         Model.buttonList[len(Model.videoList)-1].show()
     
+    
+    def importBox(self):
+        self.importBoxLabel = QLabel(self)
+        self.importBoxLabel.setStyleSheet("border: 2px solid black")
+        self.importBoxLabel.setGeometry(20,20,600,400)
+    
     """
     def createLabel(self):
         Model.importLabel.append(QLabel(self))
@@ -65,7 +72,7 @@ class Window(QWidget):
     def display(self):
         self.displayLabel = QLabel(self)
         self.displayLabel.setStyleSheet("border: 2px solid black")
-        self.displayLabel.setGeometry(500, 20, 600, 400)
+        self.displayLabel.setGeometry(700, 20, 600, 400)
 
     def toolbar(self):
         self.toolbarLabel = QLabel(self)
@@ -156,7 +163,15 @@ class Window(QWidget):
 
     def timelinetoVid(self,index):
         self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(Model.videoList[index])))
+        if(self.playButton.text() == "Pause"):
+            self.playButton.setText("Play")
         self.playButton.setEnabled(True)
+        for i in range(len(Model.buttonList)):
+            Model.buttonList[i].setStyleSheet("border: 2px solid black")
+        Model.buttonList[index].setStyleSheet("border: 2px solid red")
+            
+        
+
 
     def timelinetoVid2(self):
         print("vid2")
