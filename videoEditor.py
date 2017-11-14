@@ -208,15 +208,18 @@ class Window(QWidget):
         p = subprocess.Popen(ffmpeg_command,stdout=subprocess.PIPE)
         out1,err1 = p.communicate()
         
+        self.playButton.setEnabled(True)
         
+        self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile('/Users/jerrya/Desktop/termproject-csc690/csc690-final-project/bin/output.mp4')))
         self.update()
-
+            
     #clicking each label on the timeline leads here. currently loads video from videourl contained in videoList
     def timelinetoVid(self,index):
-        self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(Model.videoList[index])))
+        #self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(Model.videoList[index])))
+        
         if self.playButton.text() == "Pause":
             self.playButton.setText("Play")
-        self.playButton.setEnabled(True)
+    
         
 
         #highlighting
