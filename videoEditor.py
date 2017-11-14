@@ -5,14 +5,15 @@ from PyQt5.QtMultimedia import QMediaContent,QMediaPlayer
 from PyQt5.QtMultimediaWidgets import QVideoWidget
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QCheckBox, QFileDialog
 from PyQt5.QtGui import QPixmap, QImage, QMouseEvent
-from PyQt5.QtCore import Qt, QObject, pyqtSignal, QUrl, QFileInfo
+from PyQt5.QtCore import Qt, QObject, pyqtSignal, QUrl, QFileInfo, QTime
 from model import Model
 from functools import partial
+from tkinter import Tk, Toplevel, Button, Entry, Label
 
 
 class Window(QWidget):
     totalDuration = 0
-
+    
     def __init__(self):
         super().__init__()
         self.title = "Video Editor"
@@ -36,11 +37,6 @@ class Window(QWidget):
         self.mediaPlayer.durationChanged.connect(self.durationChanged)
         self.videoWidget.setAspectRatioMode(Qt.KeepAspectRatio)
         self.show()
-    
-    
-    
-    
-    
 
     def initUI(self):
         self.setWindowTitle(self.title)
@@ -142,7 +138,6 @@ class Window(QWidget):
         self.playButton.setEnabled(False)
         self.playButton.clicked.connect(self.play)
         
-
         # Import files button
         self.importButton = QPushButton("Import", self)
         self.importButton.setStyleSheet("background-color: gray")
@@ -153,6 +148,11 @@ class Window(QWidget):
         self.fullScreenButton = QPushButton("Fullscreen", self)
         self.fullScreenButton.setStyleSheet("background-color: gray")
         self.fullScreenButton.move(1000, 380)
+
+        self.addSubtitleButton = QPushButton("Add Subtitles", self)
+        self.addSubtitleButton.setStyleSheet("background-color: gray")
+        self.addSubtitleButton.move(800, 500)
+        self.addSubtitleButton.clicked.connect(self.addSubtitles)
 
     """
     def mouseReleaseEvent(self,QMouseEvent):
@@ -166,13 +166,24 @@ class Window(QWidget):
         self.videoWidget.show()
     """
     def play(self):
+        '''
+        if self.mediaPlayer.state() != QMediaPlayer.PlayingState:
+            self.mediaPlayer.play()
+            self.playButton.setText("Pause")
+            while self.mediaPlayer.state() == QMediaPlayer.PlayingState:
+                Window.totalDuration -= 1
+                if Window.totalDuration == 60000:
+                    self.mediaPlayer.pause()
+                    self.playButton.setText("Play")
+                    break
+        '''
         if self.mediaPlayer.state() == QMediaPlayer.PlayingState:
             self.mediaPlayer.pause()
             self.playButton.setText("Play")
         else:
             self.mediaPlayer.play()
             self.playButton.setText("Pause")
-
+            
     # import function to get the urls needed to display in the mediaplayer widget
     def importFunction(self):
         Model.fname, _ = QFileDialog.getOpenFileName(self, 'Open file', '../desktop','All files(*.jpeg *.mp4 *.mov);;Image files(*.jpeg);;Video Files(*.mp4 *.mov)')
@@ -203,7 +214,7 @@ class Window(QWidget):
     #clicking each label on the timeline leads here. currently loads video from videourl contained in videoList
     def timelinetoVid(self,index):
         self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(Model.videoList[index])))
-        if(self.playButton.text() == "Pause"):
+        if self.playButton.text() == "Pause":
             self.playButton.setText("Play")
         self.playButton.setEnabled(True)
         
@@ -224,6 +235,7 @@ class Window(QWidget):
 
     def timelinetoVid2(self):
         print("vid2")
+        
     #creates the timeline
     def timeMarks(self):
         self.markers = QLabel(self)
@@ -240,15 +252,41 @@ class Window(QWidget):
             self.markerLabel.setStyleSheet("font: 20px")
             self.markValue += 5
 
-
-
     #deletes videolist file on exit
     @atexit.register
     def goodbye():
         file = open('bin/text.txt','w+')
         file.truncate()
         os.remove('bin/output.mp4')
-            
+
+    # Creates a new window with a text box to enter subtitles
+    def addSubtitles(self):
+        self.root = Tk()
+        self.entry = Entry(self.root)
+        instructions = Label(self.root, text = "Please enter the text for the subtitles")
+        self.root.title("Add Subtitles")
+        self.root.geometry("400x300+500+200")
+        addButton = Button(self.root, text="Create Subtitle", command = self.printSubtitles)
+        closeButton = Button(self.root, text="Cancel", command = self.destroySecondWindow)
+        self.entry.pack()
+        closeButton.pack()
+        addButton.pack()
+        instructions.pack()
+        closeButton.place(x = "300", y = "100")
+        addButton.place(x = "50", y = "100")
+        instructions.place(x = "80", y = "200")
+        self.entry.place(x = "20", y = "10", height = "30", width = "360")
+
+        self.root.mainloop()
+
+    # Prints the text entered in the textbox in the second window
+    def printSubtitles(self):
+        print(self.entry.get())
+
+    # Destroys the second window
+    def destroySecondWindow(self):
+        self.root.destroy()
+        
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     browse = Window()
