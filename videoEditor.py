@@ -210,7 +210,8 @@ class Window(QWidget):
         
         
         #delete this for fix
-        self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile('/Users/jerrya/Desktop/termproject-csc690/csc690-final-project/bin/output.mp4')))
+        abpath = os.path.abspath('bin/output.mp4')
+        self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(abpath)))
         self.playButton.setEnabled(True)
         
         self.update()
