@@ -44,9 +44,14 @@ class Window(QWidget):
     
     #creates labels/buttons, as the thumbnails of each video imported, TODO:implement with import list as proxy
     def createButton(self):
+        videoDuration = self.mediaPlayer.duration()
         Model.buttonList.append(QPushButton(str(len(Model.videoList)),self))
         Model.buttonList[len(Model.videoList)-1].move(20+(150*(len(Model.videoList)-1)),625)
-        Model.buttonList[len(Model.videoList)-1].resize(150,130)
+        #print("Video duration: " + str(self.mediaPlayer.duration()))
+        if videoDuration >= 5000:
+            vidSeconds = int(round((videoDuration/1000) % 60))
+            print(str(vidSeconds))
+            Model.buttonList[len(Model.videoList)-1].resize(20 + (vidSeconds * 9),130)
         Model.buttonList[len(Model.videoList)-1].setStyleSheet("border: 2px solid black")
         index = 0
         Model.buttonList[len(Model.videoList)-1].clicked.connect(partial(self.timelinetoVid, len(Model.videoList)-1))
@@ -128,6 +133,7 @@ class Window(QWidget):
         self.playTimeLabel.setStyleSheet("font-size: 40px")
         self.playTimeLabel.move(650, 550)
         self.playTimeLabel.show()
+        self.createButton()
         
 
     def createButtons(self):
@@ -186,33 +192,34 @@ class Window(QWidget):
             
     # import function to get the urls needed to display in the mediaplayer widget
     def importFunction(self):
-        Model.fname, _ = QFileDialog.getOpenFileName(self, 'Open file', '../desktop','All files(*.jpeg *.mp4 *.mov);;Image files(*.jpeg);;Video Files(*.mp4 *.mov)')
+        Model.fname, _ = QFileDialog.getOpenFileName(self, 'Open file', '..\desktop','All files(*.jpeg *.mp4 *.mov);;Image files(*.jpeg);;Video Files(*.mp4 *.mov)')
         if Model.fname != '':
             Model.videoList.append(Model.fname)
         
         # this part changes the url into just the filename to be used in the import list
         fi = QFileInfo(Model.fname)
         base = fi.completeBaseName()
-        self.createButton()
+        #self.createButton()
         self.importBoxList(base)
         
         #writes to a text file to create a list for the ffmpeg comman
-        self.file = open('bin/text.txt','w+')
+        self.file = open(r'bin\text.txt','w+')
         for item in Model.videoList:
             self.file.write("file "+"'" + "%s'\n" %item)
         #print (str(item))
         self.file.close()
         
+        currentdir = os.getcwd()
         #FFMPEG command, runs the application from the OS to concactenate media files. TODO: fix the usage of different format/codec files
-        ffmpeg_command = ["ffmpeg","-y","-f","concat","-safe","0","-i","bin/text.txt","-vf","scale=1280:720","-acodec","copy","bin/output.mp4"]
+        ffmpeg_command = ["ffmpeg","-y","-f","concat","-safe","0","-i",r"bin\text.txt","-vf","scale=1280:720","-acodec","copy",r"bin\output.mp4"]
         p = subprocess.Popen(ffmpeg_command,stdout=subprocess.PIPE)
         out1,err1 = p.communicate()
         
         
         #delete this for fix
-        self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile('\Users\ipcal\Desktop\csc690-final-project\bin\output.mp4')))
+        abpath = os.path.abspath(r'bin\output.mp4')
+        self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(abpath)))
         self.playButton.setEnabled(True)
-        
         self.update()
             
     #clicking each label on the timeline leads here. currently loads video from videourl contained in videoList
