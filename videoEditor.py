@@ -185,7 +185,7 @@ class Window(QWidget):
         Model.buttonList[len(Model.buttonList)-1].resize(24 + (vidSeconds * 9),130)
         Model.buttonList[len(Model.buttonList)-1].setStyleSheet("border: 2px solid black")
         
-        Model.buttonList[Model.current].move(20+(position)*55,625)
+        Model.buttonList[Model.current].move(20+(position)*11,625)
         
         """
         if len(Model.videoListLength) == 1:
