@@ -15,3 +15,4 @@ class Model(QWidget):
     fname = None
     buttonList = []
     importList = []
+    videoListLength = [0]*20

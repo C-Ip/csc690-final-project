@@ -11,6 +11,7 @@ from functools import partial
 from tkinter import Tk, Toplevel, Button, Entry, Label
 
 
+
 class Window(QWidget):
     totalDuration = 0
     
@@ -45,15 +46,23 @@ class Window(QWidget):
     #creates labels/buttons, as the thumbnails of each video imported, TODO:implement with import list as proxy
     def createButton(self):
         videoDuration = self.mediaPlayer.duration()
+        print(str(videoDuration))
         Model.buttonList.append(QPushButton(str(len(Model.videoList)),self))
-        Model.buttonList[len(Model.videoList)-1].move(20+(150*(len(Model.videoList)-1)),625)
         #print("Video duration: " + str(self.mediaPlayer.duration()))
+        """
         if videoDuration >= 5000:
             vidSeconds = int(round((videoDuration/1000) % 60))
             print(str(vidSeconds))
-            Model.buttonList[len(Model.videoList)-1].resize(20 + (vidSeconds * 9),130)
+            Model.buttonList[len(Model.videoList)-1].resize(24 + (vidSeconds * 9),130)
+        """
+        vidSeconds = int(round((videoDuration/1000) % 60))
+        Model.buttonList[len(Model.videoList)-1].resize(24 + (vidSeconds * 9),130)
+        
         Model.buttonList[len(Model.videoList)-1].setStyleSheet("border: 2px solid black")
-        index = 0
+        if len(Model.videoListLength) == 1:
+            Model.buttonList[len(Model.videoList)-1].move(20,625)
+        else:
+            Model.buttonList[len(Model.videoList)-1].move(24+(Model.videoListLength[len(Model.videoList)-1]),625)
         Model.buttonList[len(Model.videoList)-1].clicked.connect(partial(self.timelinetoVid, len(Model.videoList)-1))
         Model.buttonList[len(Model.videoList)-1].show()
     
@@ -133,7 +142,7 @@ class Window(QWidget):
         self.playTimeLabel.setStyleSheet("font-size: 40px")
         self.playTimeLabel.move(650, 550)
         self.playTimeLabel.show()
-        self.createButton()
+        #self.createButton()
         
 
     def createButtons(self):
@@ -154,12 +163,12 @@ class Window(QWidget):
         self.fullScreenButton = QPushButton("Fullscreen", self)
         self.fullScreenButton.setStyleSheet("background-color: gray")
         self.fullScreenButton.move(1000, 380)
-
+        """
         self.addSubtitleButton = QPushButton("Add Subtitles", self)
         self.addSubtitleButton.setStyleSheet("background-color: gray")
         self.addSubtitleButton.move(800, 500)
         self.addSubtitleButton.clicked.connect(self.addSubtitles)
-
+        """
     """
     def mouseReleaseEvent(self,QMouseEvent):
         p = QMouseEvent.pos()
@@ -213,8 +222,8 @@ class Window(QWidget):
             self.file.write("file "+"'" + "%s'\n" %item)
         #print (str(item))
         self.file.close()
+
         
-        currentdir = os.getcwd()
         #FFMPEG command, runs the application from the OS to concactenate media files. TODO: fix the usage of different format/codec files
         ffmpeg_command = ["ffmpeg","-y","-f","concat","-safe","0","-i",r"bin/text.txt","-vf","scale=1280:720","-acodec","copy",r"bin/output.mp4"]
         #windows mode
@@ -251,12 +260,22 @@ class Window(QWidget):
         for i in range(len(Model.importList)):
             Model.importList[i].setStyleSheet("border: 2px solid black")
         Model.importList[index].setStyleSheet("border: 2px solid red")
+
+
+        self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(Model.videoList[index])))
+        self.playButton.setEnabled(True)
+
+        
+        
+
             
             
 
     def timelinetoVid2(self):
         print("vid2")
-        
+    
+
+
     #creates the timeline
     def timeMarks(self):
         self.markers = QLabel(self)
@@ -272,8 +291,6 @@ class Window(QWidget):
             self.markerLabel.setText(str(self.markValue) + "\n" + "|")
             self.markerLabel.setStyleSheet("font: 20px")
             self.markValue += 5
-
-    #deletes videolist file on exit
 
 
     # Creates a new window with a text box to enter subtitles
@@ -305,6 +322,7 @@ class Window(QWidget):
     def destroySecondWindow(self):
         self.root.destroy()
 
+    #deletes videolist file on exit
     @atexit.register
     def goodbye():
         file = open('bin/text.txt','w+')
@@ -314,7 +332,9 @@ class Window(QWidget):
         os.remove('bin/output.mp4')
         #windows mode
         #os.remove('bin\output.mp4')
-        
+
+
+
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     browse = Window()
