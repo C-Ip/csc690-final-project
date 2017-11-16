@@ -18,3 +18,4 @@ class Model(QWidget):
     videoListLength = [0]*20
     current = 0
     currentTimeVid = 1
+    subtitleList = []

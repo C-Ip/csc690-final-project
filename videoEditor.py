@@ -213,8 +213,10 @@ class Window(QWidget):
         p = subprocess.Popen(ffmpeg_command,stdout=subprocess.PIPE)
         #c = subprocess.Popen(ffmpeg_blank,stdout=subprocess.PIPE)
         out1,err1 = p.communicate()
-
+        
+        #windows
         abpath = os.path.abspath(r'bin\output.mp4')
+        #abpath = os.path.abspath(r'bin/output.mp4')
         self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(abpath)))
         self.playButton.setEnabled(True)
         self.update()
@@ -252,9 +254,9 @@ class Window(QWidget):
             
     # import function to get the urls needed to display in the mediaplayer widget
     def importFunction(self):
-        Model.fname, _ = QFileDialog.getOpenFileName(self, 'Open file', '../desktop','All files(*.jpeg *.mp4 *.mov);;Image files(*.jpeg);;Video Files(*.mp4 *.mov)')
+        #Model.fname, _ = QFileDialog.getOpenFileName(self, 'Open file', '../desktop','All files(*.jpeg *.mp4 *.mov);;Image files(*.jpeg);;Video Files(*.mp4 *.mov)')
         #windows
-        #Model.fname, _ = QFileDialog.getOpenFileName(self, 'Open file', '..\desktop','All files(*.jpeg *.mp4 *.mov);;Image files(*.jpeg);;Video Files(*.mp4 *.mov)')
+        Model.fname, _ = QFileDialog.getOpenFileName(self, 'Open file', '..\desktop','All files(*.jpeg *.mp4 *.mov);;Image files(*.jpeg);;Video Files(*.mp4 *.mov)')
         if Model.fname != '':
             Model.videoList.append(Model.fname)
         
@@ -263,9 +265,9 @@ class Window(QWidget):
         base = fi.completeBaseName()
         #self.createButton()
         self.importBoxList(base)
-        
-        ffmpeg_subtitles = ["ffmpeg","-i",r"bin\output.mp4","-i",r"bin\subtitles.srt","-c:v","libx264","-ar","44100","-ac","2","-ab","128k","-strict","-2","-c:s","mov_text","-map","0","-map","1",r"bin\outputfile.mp4"]
-
+        #TODO//:: needs to move to another function, so ffmpegcommand is called first
+        ffmpeg_subtitles = ["ffmpeg","-y","-i",r"bin\output.mp4","-i",r"bin\subtitles.srt","-c:v","libx264","-ar","44100","-ac","2","-ab","128k","-strict","-2","-c:s","mov_text","-map","0","-map","1",r"bin\outputfile.mp4"]
+        #ffmpeg_subtitles = ["ffmpeg","-y","-i",r"bin/output.mp4","-i",r"bin/subtitles.srt","-c:v","libx264","-ar","44100","-ac","2","-ab","128k","-strict","-2","-c:s","mov_text","-map","0","-map","1",r"bin/outputfile.mp4"]
         s = subprocess.Popen(ffmpeg_subtitles,stdout=subprocess.PIPE)
         out1,err1 = s.communicate()
 
@@ -332,34 +334,49 @@ class Window(QWidget):
         self.root = Tk()
         self.entry = Entry(self.root)
         self.timePosition = Entry(self.root)
+        self.subLength = Entry(self.root)
+        
         instructions = Label(self.root, text = "Please enter the text for the subtitles:")
         text = Label(self.root, text = "Time you wish to insert subtitle:")
+        length = Label(self.root, text = "Duration of subtitles:")
+        
         self.root.title("Add Subtitles")
         self.root.geometry("400x300+500+200")
         addButton = Button(self.root, text="Create Subtitle", command = self.printSubtitles)
         closeButton = Button(self.root, text="Cancel", command = self.destroySecondWindow)
+        
         self.entry.pack()
         self.timePosition.pack()
+        self.subLength.pack()
         closeButton.pack()
         addButton.pack()
         instructions.pack()
         text.pack()
+        length.pack()
+        
         instructions.place(x = "80", y = "10")
         self.entry.place(x = "20", y = "50", height = "30", width = "360")
         text.place(x = "100", y = "100")
         self.timePosition.place(x = "150", y = "130", height = "30", width  = "100")
-        closeButton.place(x = "300", y = "180")
-        addButton.place(x = "30", y = "180")
+        length.place(x = "150", y = "170")
+        self.subLength.place(x = "150", y = "200", height = "30", width = "100")
+        closeButton.place(x = "300", y = "230")
+        addButton.place(x = "30", y = "230")
 
         self.root.mainloop()
 
     # Prints the text entered in the textbox in the second window
     def printSubtitles(self):
         self.subtitleLabel = QLabel(self)
-        self.subtitleLabel.setGeometry(20, 770, 40, 80)
-        self.subtitleLabel.setStyleSheet("border: 2px solid red")
-        self.subtitleLabel.setText(self.entry.get())
-        self.subtitleLabel.show()
+        Model.subtitleList.append(self.entry.get()) 
+
+        self.subtitleDuration = int(self.subLength.get())
+        Model.buttonList[len(Model.subtitleList)-1].resize(24 + (self.subtitleDuration * 9),130)
+        Model.buttonList[len(Model.subtitleList)-1].setStyleSheet("border: 2px solid black")
+        
+        subPosition = int(self.text.get())
+        Model.buttonList[len(Model.subtitleList)-1].move(20+(subPosition)*11,770)
+        
 
         #self.subtitleFile = open(r"bin/subtitles.srt", "a+")
         # Window
