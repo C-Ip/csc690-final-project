@@ -265,7 +265,7 @@ class Window(QWidget):
         base = fi.completeBaseName()
         #self.createButton()
         self.importBoxList(base)
-        
+        #TODO//:: needs to move to another function, so ffmpegcommand is called first
         #ffmpeg_subtitles = ["ffmpeg","-y","-i",r"bin\output.mp4","-i",r"bin\subtitles.srt","-c:v","libx264","-ar","44100","-ac","2","-ab","128k","-strict","-2","-c:s","mov_text","-map","0","-map","1",r"bin\outputfile.mp4"]
         ffmpeg_subtitles = ["ffmpeg","-y","-i",r"bin/output.mp4","-i",r"bin/subtitles.srt","-c:v","libx264","-ar","44100","-ac","2","-ab","128k","-strict","-2","-c:s","mov_text","-map","0","-map","1",r"bin/outputfile.mp4"]
         s = subprocess.Popen(ffmpeg_subtitles,stdout=subprocess.PIPE)
