@@ -43,31 +43,6 @@ class Window(QWidget):
         self.setWindowTitle(self.title)
         self.setGeometry(100, 50, 1700, 900)
     
-    #creates labels/buttons, as the thumbnails of each video imported, TODO:implement with import list as proxy
-    def createButton(self):
-        videoDuration = self.mediaPlayer.duration()
-        print(str(videoDuration))
-        Model.buttonList.append(QPushButton(str(len(Model.videoList)),self))
-        #print("Video duration: " + str(self.mediaPlayer.duration()))
-        """
-        if videoDuration >= 5000:
-            vidSeconds = int(round((videoDuration/1000) % 60))
-            print(str(vidSeconds))
-            Model.buttonList[len(Model.videoList)-1].resize(24 + (vidSeconds * 9),130)
-
-        """
-        vidSeconds = int(round((videoDuration/1000) % 60))
-        Model.buttonList[len(Model.videoList)-1].resize(24 + (vidSeconds * 9),130)
-        
-
-
-        Model.buttonList[len(Model.videoList)-1].setStyleSheet("border: 2px solid black")
-        if len(Model.videoListLength) == 1:
-            Model.buttonList[len(Model.videoList)-1].move(20,625)
-        else:
-            Model.buttonList[len(Model.videoList)-1].move(24+(Model.videoListLength[len(Model.videoList)-1]),625)
-        Model.buttonList[len(Model.videoList)-1].clicked.connect(partial(self.timelinetoVid, len(Model.videoList)-1))
-        Model.buttonList[len(Model.videoList)-1].show()
     
     #creates the box for the import list, default box
     def importBox(self):
@@ -167,10 +142,6 @@ class Window(QWidget):
         self.fullScreenButton.setStyleSheet("background-color: gray")
         self.fullScreenButton.move(1000, 380)
 
-
-        self.addSubtitleButton = QPushButton("Add Subtitles", self)
-
-            
         self.addSubtitleButton = QPushButton("Add Subtitles", self)
         self.addSubtitleButton.setStyleSheet("background-color: gray")
         self.addSubtitleButton.move(800, 500)
@@ -180,6 +151,51 @@ class Window(QWidget):
         self.moveButton = QPushButton("Move to Timeline", self)
         self.moveButton.setStyleSheet("background-color: gray")
         self.moveButton.move(400, 500)
+        self.moveButton.clicked.connect(self.createButton)
+        self.moveButton.setEnabled(False)
+    
+        #qlineedit
+        self.positioningRequest = QLineEdit(self)
+        self.positioningRequest.move(400,460)
+        self.positioningRequest.resize(100,25)
+        self.positioningRequest.setEnabled(False)
+        
+    
+    
+        self.instruct = QLabel(self)
+        self.instruct.setText("Enter position(seconds):")
+        self.instruct.move(250,465)
+    
+    
+        #creates labels/buttons, as the thumbnails of each video imported, TODO:implement with import list as proxy
+    def createButton(self):
+        videoDuration = self.mediaPlayer.duration()
+        #Model.videoListLength.append(videoDuration)
+        Model.buttonList.append(QPushButton(str(Model.current+1),self))
+        position = int(self.positioningRequest.text())
+        #print("Video duration: " + str(self.mediaPlayer.duration()))
+        """
+        if videoDuration >= 5000:
+            vidSeconds = int(round((videoDuration/1000) % 60))
+            print(str(vidSeconds))
+            Model.buttonList[len(Model.videoList)-1].resize(24 + (vidSeconds * 9),130)
+        
+        """
+        vidSeconds = int(round((videoDuration/1000) % 60))
+        Model.buttonList[len(Model.buttonList)-1].resize(24 + (vidSeconds * 9),130)
+        Model.buttonList[len(Model.buttonList)-1].setStyleSheet("border: 2px solid black")
+        
+        Model.buttonList[Model.current].move(20+(position)*55,625)
+        
+        """
+        if len(Model.videoListLength) == 1:
+            Model.buttonList[len(Model.videoList)-1].move(20,625)
+        else:
+            Model.buttonList[len(Model.videoList)-1].move(20,625)
+        """
+        Model.buttonList[len(Model.buttonList)-1].clicked.connect(partial(self.timelinetoVid, len(Model.buttonList)-1))
+        Model.buttonList[len(Model.buttonList)-1].show()
+
 
     """
     def mouseReleaseEvent(self,QMouseEvent):
@@ -255,10 +271,10 @@ class Window(QWidget):
     #clicking each label on the timeline leads here. currently loads video from videourl contained in videoList
     def timelinetoVid(self,index):
         #self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(Model.videoList[index])))
-        
+        """
         if self.playButton.text() == "Pause":
             self.playButton.setText("Play")
-    
+        """
         #self.playButton.setEnabled(True)
 
         #highlighting
@@ -276,8 +292,9 @@ class Window(QWidget):
 
         self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(Model.videoList[index])))
         self.playButton.setEnabled(True)
-
-        
+        self.moveButton.setEnabled(True)
+        self.positioningRequest.setEnabled(True)
+        Model.current = index
         
 
             
@@ -363,8 +380,8 @@ class Window(QWidget):
         file.truncate()
         #os.remove('bin/output.mp4')
         #windows mode
-        os.remove('bin\output.mp4')
         #os.remove('bin\output.mp4')
+
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
