@@ -160,6 +160,11 @@ class Window(QWidget):
         self.addSubtitleButton.move(800, 500)
         self.addSubtitleButton.clicked.connect(self.addSubtitles)
 
+        # Move to timeline button
+        self.moveButton = QPushButton("Move to Timeline", self)
+        self.moveButton.setStyleSheet("background-color: gray")
+        self.moveButton.move(400, 500)
+
     """
     def mouseReleaseEvent(self,QMouseEvent):
         p = QMouseEvent.pos()
@@ -310,9 +315,10 @@ class Window(QWidget):
         self.subtitleLabel.setText(self.entry.get())
         self.subtitleLabel.show()
 
-        self.subtitleFile = open(r"bin\subtitles.txt", "a+")
+        #self.subtitleFile = open(r"bin/subtitles.srt", "a+")
+        # Window
+        self.subtitleFile = open(r"bin\subtitles.srt", "a+")
         self.subtitleFile.write(self.entry.get() + "\n")
-        #self.subtitleFile.write(self.entry.get())
         self.subtitleFile.close()
 
         self.destroySecondWindow()
