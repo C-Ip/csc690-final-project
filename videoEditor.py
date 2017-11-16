@@ -14,6 +14,7 @@ from tkinter import Tk, Toplevel, Button, Entry, Label
 
 class Window(QWidget):
     totalDuration = 0
+    subtitleIndex = 1
     
     def __init__(self):
         super().__init__()
@@ -368,20 +369,43 @@ class Window(QWidget):
     # Prints the text entered in the textbox in the second window
     def printSubtitles(self):
         self.subtitleLabel = QLabel(self)
-        Model.subtitleList.append(self.entry.get()) 
+        Model.subtitleList.append(self.entry.get())
+        Model.subtitleButtonList.append(QPushButton(str(Model.subtitleList[len(Model.subtitleList) - 1]), self))
 
         self.subtitleDuration = int(self.subLength.get())
-        Model.buttonList[len(Model.subtitleList)-1].resize(24 + (self.subtitleDuration * 9),130)
-        Model.buttonList[len(Model.subtitleList)-1].setStyleSheet("border: 2px solid black")
+        Model.subtitleButtonList[len(Model.subtitleList) - 1].resize(24 + (self.subtitleDuration * 9),80)
+        Model.subtitleButtonList[len(Model.subtitleList) - 1].setStyleSheet("border: 2px solid black")
         
-        subPosition = int(self.text.get())
-        Model.buttonList[len(Model.subtitleList)-1].move(20+(subPosition)*11,770)
+        subPosition = int(self.timePosition.get())
+        print(str(len(Model.subtitleList) - 1))
+        Model.subtitleButtonList[len(Model.subtitleList) - 1].move(24+(subPosition)*11,770)
+        Model.subtitleButtonList[len(Model.subtitleList) - 1].show()
         
-
         #self.subtitleFile = open(r"bin/subtitles.srt", "a+")
         # Window
-        self.subtitleFile = open("subtitles.srt", "a+")
-        self.subtitleFile.write(self.entry.get() + "\n")
+        self.subtitleFile = open(r"bin\subtitles.srt", "a+")
+        subtitleIndex = 1
+        self.subtitleFile.write(str(Window.subtitleIndex) + "\n")
+        Window.subtitleIndex += 1
+        if subPosition < 10:
+            self.subtitleFile.write("00:00:0" + str(subPosition) + ",000 --> ")
+            if self.subtitleDuration + subPosition < 10:
+                self.subtitleFile.write("00:00:0" + str(self.subtitleDuration + subPosition) + ",000\n")
+            if self.subtitleDuration + subPosition >= 10 and self.subtitleDuration + subPosition < 100:
+                self.subtitleFile.write("00:00:" + str(self.subtitleDuration + subPosition) + ",000\n")
+        if subPosition >= 10 and subPosition <= 59:
+            self.subtitleFile.write("00:00:" + str(subPosition) + ",000 --> ")
+            if self.subtitleDuration + subPosition >= 60 and self.subtitleDuration + subPosition < 600:
+                minutes = int((self.subtitleDuration + subPosition) / 60)
+                seconds = (self.subtitleDuration + subPosition) % 60
+                if seconds < 10:
+                    self.subtitleFile.write("00:0" + str(minutes) + ":0" + str(seconds) + ",000\n")
+                else:
+                    self.subtitleFile.write("00:0" + str(minutes) + ":" + str(seconds) + ",000\n")
+            else:
+                self.subtitleFile.write("00:00:" + str(self.subtitleDuration + subPosition) + ",000\n")
+            
+        self.subtitleFile.write(self.entry.get() + ("\n" * 2))
         self.subtitleFile.close()
 
         self.destroySecondWindow()
