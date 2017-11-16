@@ -53,7 +53,7 @@ class Window(QWidget):
     def importBoxList(self,fname):
         Model.importList.append(QPushButton("",self))
         Model.importList[len(Model.videoList)-1].setStyleSheet("border: 2px solid black")
-        Model.importList[len(Model.videoList)-1].setText(str(len(Model.importList)-1)+". "+str(fname))
+        Model.importList[len(Model.videoList)-1].setText(str(len(Model.importList))+". "+str(fname))
         Model.importList[len(Model.videoList)-1].setGeometry(20,20+(20*(len(Model.videoList)-1)),300,20)
         Model.importList[len(Model.videoList)-1].clicked.connect(partial(self.importClicked, len(Model.videoList)-1))
         Model.importList[len(Model.videoList)-1].show()
@@ -185,7 +185,8 @@ class Window(QWidget):
         Model.buttonList[len(Model.buttonList)-1].resize(24 + (vidSeconds * 9),130)
         Model.buttonList[len(Model.buttonList)-1].setStyleSheet("border: 2px solid black")
         
-        Model.buttonList[Model.current].move(20+(position)*11,625)
+
+        Model.buttonList[len(Model.buttonList)-1].move(20+(position)*11,625)
         
         """
         if len(Model.videoListLength) == 1:
