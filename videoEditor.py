@@ -167,7 +167,7 @@ class Window(QWidget):
         self.fullScreenButton.setStyleSheet("background-color: gray")
         self.fullScreenButton.move(1000, 380)
 
-        """
+
         self.addSubtitleButton = QPushButton("Add Subtitles", self)
 
             
@@ -175,7 +175,7 @@ class Window(QWidget):
         self.addSubtitleButton.setStyleSheet("background-color: gray")
         self.addSubtitleButton.move(800, 500)
         self.addSubtitleButton.clicked.connect(self.addSubtitles)
-        """
+        
     """
     def mouseReleaseEvent(self,QMouseEvent):
         p = QMouseEvent.pos()
