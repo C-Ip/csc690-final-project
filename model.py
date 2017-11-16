@@ -16,3 +16,5 @@ class Model(QWidget):
     buttonList = []
     importList = []
     videoListLength = [0]*20
+    current = 0
+    currentTimeVid = 1
