@@ -20,3 +20,4 @@ class Model(QWidget):
     currentTimeVid = 1
     subtitleList = []
     subtitleButtonList = []
+    positionarray = []
