@@ -199,22 +199,24 @@ class Window(QWidget):
         Model.buttonList[len(Model.buttonList)-1].show()
         
         #writes to a text file to create a list for the ffmpeg comman
-        #self.file = open(r'bin/text.txt','w+')
+        self.file = open(r'bin/text.txt','w+')
         #windows
-        self.file = open(r'bin\text.txt','w+')
+        #self.file = open(r'bin\text.txt','w+')
         self.file.write("file "+"'" + "%s'\n" %Model.videoList[Model.current])
         self.file.close()
 
         #FFMPEG command, runs the application from the OS to concactenate media files. TODO: fix the usage of different format/codec files
-        #ffmpeg_command = ["ffmpeg","-y","-f","concat","-safe","0","-i",r"bin/text.txt","-vf","scale=1280:720","-acodec","copy",r"bin/output.mp4"]
+        ffmpeg_command = ["ffmpeg","-y","-f","concat","-safe","0","-i",r"bin/text.txt","-vf","scale=1280:720","-acodec","copy",r"bin/output.mp4"]
         #windows mode
-        ffmpeg_command = ["ffmpeg","-y","-f","concat","-safe","0","-i",r"bin\text.txt","-vf","scale=1280:720","-acodec","copy",r"bin\output.mp4"]
+        #ffmpeg_command = ["ffmpeg","-y","-f","concat","-safe","0","-i",r"bin\text.txt","-vf","scale=1280:720","-acodec","copy",r"bin\output.mp4"]
         #ffmpeg_blank = ["ffmpeg","-f","lavfi","-i","color=c=black:s=320x240:d=2","-vf",r"bin\output.mp4"]
         p = subprocess.Popen(ffmpeg_command,stdout=subprocess.PIPE)
         #c = subprocess.Popen(ffmpeg_blank,stdout=subprocess.PIPE)
         out1,err1 = p.communicate()
-
-        abpath = os.path.abspath(r'bin\output.mp4')
+        
+        #windows
+        #abpath = os.path.abspath(r'bin\output.mp4')
+        abpath = os.path.abspath(r'bin/output.mp4')
         self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(abpath)))
         self.playButton.setEnabled(True)
         self.update()
@@ -264,8 +266,8 @@ class Window(QWidget):
         #self.createButton()
         self.importBoxList(base)
         
-        ffmpeg_subtitles = ["ffmpeg","-i",r"bin\output.mp4","-i",r"bin\subtitles.srt","-c:v","libx264","-ar","44100","-ac","2","-ab","128k","-strict","-2","-c:s","mov_text","-map","0","-map","1",r"bin\outputfile.mp4"]
-
+        #ffmpeg_subtitles = ["ffmpeg","-y","-i",r"bin\output.mp4","-i",r"bin\subtitles.srt","-c:v","libx264","-ar","44100","-ac","2","-ab","128k","-strict","-2","-c:s","mov_text","-map","0","-map","1",r"bin\outputfile.mp4"]
+        ffmpeg_subtitles = ["ffmpeg","-y","-i",r"bin/output.mp4","-i",r"bin/subtitles.srt","-c:v","libx264","-ar","44100","-ac","2","-ab","128k","-strict","-2","-c:s","mov_text","-map","0","-map","1",r"bin/outputfile.mp4"]
         s = subprocess.Popen(ffmpeg_subtitles,stdout=subprocess.PIPE)
         out1,err1 = s.communicate()
 
@@ -377,15 +379,15 @@ class Window(QWidget):
     #deletes videolist file on exit
     @atexit.register
     def goodbye():
-        #file = open('bin/text.txt','w+')
+        file = open('bin/text.txt','w+')
         #windows
-        file = open('bin\text.txt','w+')
+        #file = open('bin\text.txt','w+')
         file.truncate()
         #windows
-        if os.path.isfile('bin\output.mp4'):
-            os.remove('bin\output.mp4')
-        #if os.path.isfile('bin/output.mp4'):
-            #os.remove('bin/output.mp4')
+        #if os.path.isfile('bin\output.mp4'):
+            #os.remove('bin\output.mp4')
+        if os.path.isfile('bin/output.mp4'):
+            os.remove('bin/output.mp4')
         else:
             print("files clean!")
 
