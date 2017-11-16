@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 import sys, os, subprocess, atexit
 from PyQt5 import QtCore
+from operator import itemgetter,attrgetter
 from PyQt5.QtMultimedia import QMediaContent,QMediaPlayer
 from PyQt5.QtMultimediaWidgets import QVideoWidget
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QCheckBox, QFileDialog, QLineEdit
@@ -9,7 +10,7 @@ from PyQt5.QtCore import Qt, QObject, pyqtSignal, QUrl, QFileInfo, QTime
 from model import Model
 from functools import partial
 from tkinter import Tk, Toplevel, Button, Entry, Label
-
+from positionObject import positionObject
 
 
 class Window(QWidget):
@@ -160,6 +161,8 @@ class Window(QWidget):
         self.positioningRequest.resize(100,25)
         self.positioningRequest.setEnabled(False)
         
+        
+        
     
     
         self.instruct = QLabel(self)
@@ -170,9 +173,13 @@ class Window(QWidget):
         #creates labels/buttons, as the thumbnails of each video imported, TODO:implement with import list as proxy
     def createButton(self):
         videoDuration = self.mediaPlayer.duration()
-        #Model.videoListLength.append(videoDuration)
+        Model.videoListLength.append(videoDuration)
         Model.buttonList.append(QPushButton(str(Model.current+1),self))
         position = int(self.positioningRequest.text())
+        
+        Model.positionarray.append(positionObject(position,len(Model.buttonList)-1))
+        sorted(Model.positionarray,key = attrgetter('timepos'),reverse = True)
+        
         #print("Video duration: " + str(self.mediaPlayer.duration()))
 
         """
@@ -186,8 +193,11 @@ class Window(QWidget):
         Model.buttonList[len(Model.buttonList)-1].resize(24 + (vidSeconds * 9),130)
         Model.buttonList[len(Model.buttonList)-1].setStyleSheet("border: 2px solid black")
         
-
+        
         Model.buttonList[len(Model.buttonList)-1].move(20+(position)*11,625)
+        
+        
+        
         
         """
         if len(Model.videoListLength) == 1:
@@ -206,13 +216,13 @@ class Window(QWidget):
         self.file.close()
 
         #FFMPEG command, runs the application from the OS to concactenate media files. TODO: fix the usage of different format/codec files
-        ffmpeg_command = ["ffmpeg","-y","-f","concat","-safe","0","-i",r"bin/text.txt","-vf","scale=1280:720","-acodec","copy",r"bin/output.mp4"]
+        #ffmpeg_command = ["ffmpeg","-y","-f","concat","-safe","0","-i",r"bin/text.txt","-vf","scale=1280:720","-acodec","copy",r"bin/output.mp4"]
         #windows mode
         #ffmpeg_command = ["ffmpeg","-y","-f","concat","-safe","0","-i",r"bin\text.txt","-vf","scale=1280:720","-acodec","copy",r"bin\output.mp4"]
         #ffmpeg_blank = ["ffmpeg","-f","lavfi","-i","color=c=black:s=320x240:d=2","-vf",r"bin\output.mp4"]
-        p = subprocess.Popen(ffmpeg_command,stdout=subprocess.PIPE)
+        #p = subprocess.call(ffmpeg_command,stdout=subprocess.PIPE)
         #c = subprocess.Popen(ffmpeg_blank,stdout=subprocess.PIPE)
-        out1,err1 = p.communicate()
+        #out1,err1 = p.communicate()
         
         #windows
         #abpath = os.path.abspath(r'bin\output.mp4')
@@ -268,13 +278,39 @@ class Window(QWidget):
         #TODO//:: needs to move to another function, so ffmpegcommand is called first
         #ffmpeg_subtitles = ["ffmpeg","-y","-i",r"bin\output.mp4","-i",r"bin\subtitles.srt","-c:v","libx264","-ar","44100","-ac","2","-ab","128k","-strict","-2","-c:s","mov_text","-map","0","-map","1",r"bin\outputfile.mp4"]
         ffmpeg_subtitles = ["ffmpeg","-y","-i",r"bin/output.mp4","-i",r"bin/subtitles.srt","-c:v","libx264","-ar","44100","-ac","2","-ab","128k","-strict","-2","-c:s","mov_text","-map","0","-map","1",r"bin/outputfile.mp4"]
-        s = subprocess.Popen(ffmpeg_subtitles,stdout=subprocess.PIPE)
+        s = subprocess.Popen(ffmpeg_subtitles,stdout=subprocess.PIPE) #.call to fix waiting issue
         out1,err1 = s.communicate()
 
         
     #clicking each label on the timeline leads here. currently loads video from videourl contained in videoList
     def timelinetoVid(self,index):
         #self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(Model.videoList[index])))
+        n =0
+        if len(Model.positionarray) == 1:
+            for obj in Model.positionarray:
+                distance = obj.timepos
+                firststr= r"bin/blackvideo" + str(0) +".mp4"
+                ffmpeg_separation = ["ffmpeg","-t",str(distance),"-s","640x580","-f","rawvideo","-pix_fmt","rgb24","-r","25","-i","/dev/zero",firststr]
+                black = subprocess.Popen(ffmpeg_separation,stdout=subprocess.PIPE)
+                out1,err1 = black.communicate()
+        else:
+            if len(positionarray)%2 == 0:
+                for  x in range(len(positionarray)-1):
+                    distance = Model.positionarray[x].timepos - positionarray[x+1].timepos + Model.videoListLength[Model.positionarray[x].index]  #will need an array to hold the distances of multiple videos, at this point it is meant for 2 or less videos
+                    finaldistance = Model.positionarray[len(Model.positionarray)-1].timepos
+                    firststr= r"bin/blackvideo" + str(x) +".mp4"
+                    secstr = r"bin/blackvideo" + str(x+1) +".mp4"
+                
+                    ffmpeg_separation = ["ffmpeg","-t",str(distance),"-s","640x580","-f","rawvideo","-pix_fmt","rgb24","-r","25","-i","/dev/zero",firststr]
+                    black = subprocess.call(ffmpeg_separation,stdout=subprocess.PIPE)
+                    out1,err1 = black.communicate()
+                    #ffmpeg_separation2= ["ffmpeg","-t",str(finaldistance),"-s","640:480","-f","rawvideo","-pix_fmt","rgb24","-r","25","-i","/dev/zero",secstr]
+                    #windows
+                    #ffmpeg_separation = ["ffmpeg","-t",str(distance),"-s","640:480","-f","rawvideo","-pix_fmt","rgb24","-r","25","-i","\dev\zero",r"bin\blackvideo"+str(x)+".mov"]
+                    #ffmpeg_separation2= ["ffmpeg","-t",str(finaldistance),"-s","640:480","-f","rawvideo","-pix_fmt","rgb24","-r","25","-i","\dev\zero",r"bin\blackvideo"+str(x+1)+".mov"]
+        
+    
+    
         """
         if self.playButton.text() == "Pause":
             self.playButton.setText("Play")
