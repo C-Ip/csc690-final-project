@@ -174,6 +174,7 @@ class Window(QWidget):
         Model.buttonList.append(QPushButton(str(Model.current+1),self))
         position = int(self.positioningRequest.text())
         #print("Video duration: " + str(self.mediaPlayer.duration()))
+
         """
         if videoDuration >= 5000:
             vidSeconds = int(round((videoDuration/1000) % 60))
@@ -196,6 +197,27 @@ class Window(QWidget):
         """
         Model.buttonList[len(Model.buttonList)-1].clicked.connect(partial(self.timelinetoVid, len(Model.buttonList)-1))
         Model.buttonList[len(Model.buttonList)-1].show()
+
+        #writes to a text file to create a list for the ffmpeg comman
+        #self.file = open(r'bin/text.txt','w+')
+        #windows
+        self.file = open(r'bin\text.txt','w+')
+        self.file.write("file "+"'" + "%s'\n" %Model.videoList[Model.current])
+        self.file.close()
+
+        #FFMPEG command, runs the application from the OS to concactenate media files. TODO: fix the usage of different format/codec files
+        #ffmpeg_command = ["ffmpeg","-y","-f","concat","-safe","0","-i",r"bin/text.txt","-vf","scale=1280:720","-acodec","copy",r"bin/output.mp4"]
+        #windows mode
+        ffmpeg_command = ["ffmpeg","-y","-f","concat","-safe","0","-i",r"bin\text.txt","-vf","scale=1280:720","-acodec","copy",r"bin\output.mp4"]
+        #ffmpeg_blank = ["ffmpeg","-f","lavfi","-i","color=c=black:s=320x240:d=2","-vf",r"bin\output.mp4"]
+        p = subprocess.Popen(ffmpeg_command,stdout=subprocess.PIPE)
+        #c = subprocess.Popen(ffmpeg_blank,stdout=subprocess.PIPE)
+        out1,err1 = p.communicate()
+
+        abpath = os.path.abspath(r'bin\output.mp4')
+        self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(abpath)))
+        self.playButton.setEnabled(True)
+        self.update()
 
 
     """
@@ -246,17 +268,17 @@ class Window(QWidget):
         #self.file = open(r'bin/text.txt','w+')
         #windows
         self.file = open(r'bin\text.txt','w+')
-        
+
+        '''
         for item in Model.videoList:
             self.file.write("file "+"'" + "%s'\n" %item)
-        #print (str(item))
         self.file.close()
-
+        
         
         #FFMPEG command, runs the application from the OS to concactenate media files. TODO: fix the usage of different format/codec files
         #ffmpeg_command = ["ffmpeg","-y","-f","concat","-safe","0","-i",r"bin/text.txt","-vf","scale=1280:720","-acodec","copy",r"bin/output.mp4"]
         #windows mode
-        ffmpeg_command = ["ffmpeg","-y","-f","concat","-safe","0","-i",r"bin\text.txt","-vf","scale=1280:720","-acodec","copy",r"bin\output.mp4"]
+        #ffmpeg_command = ["ffmpeg","-y","-f","concat","-safe","0","-i",r"bin\text.txt","-vf","scale=1280:720","-acodec","copy",r"bin\output.mp4"]
         #ffmpeg_subtitles = ["ffmpeg","-i",r"bin\output.mp4","-vf","subtitles=subtitles.srt",r"bin\movieSubtitles.mp4"]
         p = subprocess.Popen(ffmpeg_command,stdout=subprocess.PIPE)
         #s = subprocess.Popen(ffmpeg_subtitles,stdout=subprocess.PIPE)
@@ -269,6 +291,7 @@ class Window(QWidget):
         self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(abpath)))
         self.playButton.setEnabled(True)
         self.update()
+        '''
             
     #clicking each label on the timeline leads here. currently loads video from videourl contained in videoList
     def timelinetoVid(self,index):
