@@ -106,6 +106,8 @@ class Window(QWidget):
         self.timeLineLabel.setStyleSheet("border: 2px solid black")
         self.timeLineLabel.setGeometry(20, 625, 1400, 130)
 
+        
+
         # Timeline for subtitles
         self.subTimeLineLabel = QLabel(self)
         self.subTimeLineLabel.setStyleSheet("border: 2px solid black")
