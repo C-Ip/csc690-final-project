@@ -197,7 +197,7 @@ class Window(QWidget):
         """
         Model.buttonList[len(Model.buttonList)-1].clicked.connect(partial(self.timelinetoVid, len(Model.buttonList)-1))
         Model.buttonList[len(Model.buttonList)-1].show()
-
+        
         #writes to a text file to create a list for the ffmpeg comman
         #self.file = open(r'bin/text.txt','w+')
         #windows
@@ -218,7 +218,7 @@ class Window(QWidget):
         self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(abpath)))
         self.playButton.setEnabled(True)
         self.update()
-
+        
 
     """
     def mouseReleaseEvent(self,QMouseEvent):
@@ -252,9 +252,9 @@ class Window(QWidget):
             
     # import function to get the urls needed to display in the mediaplayer widget
     def importFunction(self):
-        #Model.fname, _ = QFileDialog.getOpenFileName(self, 'Open file', '../desktop','All files(*.jpeg *.mp4 *.mov);;Image files(*.jpeg);;Video Files(*.mp4 *.mov)')
+        Model.fname, _ = QFileDialog.getOpenFileName(self, 'Open file', '../desktop','All files(*.jpeg *.mp4 *.mov);;Image files(*.jpeg);;Video Files(*.mp4 *.mov)')
         #windows
-        Model.fname, _ = QFileDialog.getOpenFileName(self, 'Open file', '..\desktop','All files(*.jpeg *.mp4 *.mov);;Image files(*.jpeg);;Video Files(*.mp4 *.mov)')
+        #Model.fname, _ = QFileDialog.getOpenFileName(self, 'Open file', '..\desktop','All files(*.jpeg *.mp4 *.mov);;Image files(*.jpeg);;Video Files(*.mp4 *.mov)')
         if Model.fname != '':
             Model.videoList.append(Model.fname)
         
@@ -264,35 +264,12 @@ class Window(QWidget):
         #self.createButton()
         self.importBoxList(base)
         
-        #writes to a text file to create a list for the ffmpeg comman
-        #self.file = open(r'bin/text.txt','w+')
-        #windows
-        self.file = open(r'bin\text.txt','w+')
+        ffmpeg_subtitles = ["ffmpeg","-i",r"bin\output.mp4","-i",r"bin\subtitles.srt","-c:v","libx264","-ar","44100","-ac","2","-ab","128k","-strict","-2","-c:s","mov_text","-map","0","-map","1",r"bin\outputfile.mp4"]
 
-        '''
-        for item in Model.videoList:
-            self.file.write("file "+"'" + "%s'\n" %item)
-        self.file.close()
+        s = subprocess.Popen(ffmpeg_subtitles,stdout=subprocess.PIPE)
+        out1,err1 = s.communicate()
+
         
-        
-        #FFMPEG command, runs the application from the OS to concactenate media files. TODO: fix the usage of different format/codec files
-        #ffmpeg_command = ["ffmpeg","-y","-f","concat","-safe","0","-i",r"bin/text.txt","-vf","scale=1280:720","-acodec","copy",r"bin/output.mp4"]
-        #windows mode
-        #ffmpeg_command = ["ffmpeg","-y","-f","concat","-safe","0","-i",r"bin\text.txt","-vf","scale=1280:720","-acodec","copy",r"bin\output.mp4"]
-        #ffmpeg_subtitles = ["ffmpeg","-i",r"bin\output.mp4","-vf","subtitles=subtitles.srt",r"bin\movieSubtitles.mp4"]
-        p = subprocess.Popen(ffmpeg_command,stdout=subprocess.PIPE)
-        #s = subprocess.Popen(ffmpeg_subtitles,stdout=subprocess.PIPE)
-        out1,err1 = p.communicate()
-        
-        #delete this for fix
-        #abpath = os.path.abspath(r'bin/output.mp4')
-        #windows mode
-        abpath = os.path.abspath(r'bin\output.mp4')
-        self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(abpath)))
-        self.playButton.setEnabled(True)
-        self.update()
-        '''
-            
     #clicking each label on the timeline leads here. currently loads video from videourl contained in videoList
     def timelinetoVid(self,index):
         #self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(Model.videoList[index])))
@@ -392,6 +369,7 @@ class Window(QWidget):
 
         self.destroySecondWindow()
 
+
     # Destroys the second window
     def destroySecondWindow(self):
         self.root.destroy()
@@ -403,10 +381,13 @@ class Window(QWidget):
         #windows
         file = open('bin\text.txt','w+')
         file.truncate()
-        #os.remove('bin/output.mp4')
-        #windows mode
-        os.remove('bin\output.mp4')
-
+        #windows
+        if os.path.isfile('bin\output.mp4'):
+            os.remove('bin\output.mp4')
+        #if os.path.isfile('bin/output.mp4'):
+            #os.remove('bin/output.mp4')
+        else:
+            print("files clean!")
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
