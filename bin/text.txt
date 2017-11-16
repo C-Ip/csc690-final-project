@@ -1,4 +1,1 @@
-<<<<<<< HEAD
 file 'C:/Users/ipcal/Desktop/csc690-final-project/demo.mov'
-=======
->>>>>>> 34465d617ab0a3508504450ac0bef4734680eb4c

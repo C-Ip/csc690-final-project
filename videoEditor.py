@@ -166,11 +166,7 @@ class Window(QWidget):
         self.fullScreenButton = QPushButton("Fullscreen", self)
         self.fullScreenButton.setStyleSheet("background-color: gray")
         self.fullScreenButton.move(1000, 380)
-
-
-        self.addSubtitleButton = QPushButton("Add Subtitles", self)
-
-            
+        
         self.addSubtitleButton = QPushButton("Add Subtitles", self)
         self.addSubtitleButton.setStyleSheet("background-color: gray")
         self.addSubtitleButton.move(800, 500)
@@ -213,9 +209,9 @@ class Window(QWidget):
             
     # import function to get the urls needed to display in the mediaplayer widget
     def importFunction(self):
-        Model.fname, _ = QFileDialog.getOpenFileName(self, 'Open file', '../desktop','All files(*.jpeg *.mp4 *.mov);;Image files(*.jpeg);;Video Files(*.mp4 *.mov)')
+        #Model.fname, _ = QFileDialog.getOpenFileName(self, 'Open file', '../desktop','All files(*.jpeg *.mp4 *.mov);;Image files(*.jpeg);;Video Files(*.mp4 *.mov)')
         #windows
-        #Model.fname, _ = QFileDialog.getOpenFileName(self, 'Open file', '..\desktop','All files(*.jpeg *.mp4 *.mov);;Image files(*.jpeg);;Video Files(*.mp4 *.mov)')
+        Model.fname, _ = QFileDialog.getOpenFileName(self, 'Open file', '..\desktop','All files(*.jpeg *.mp4 *.mov);;Image files(*.jpeg);;Video Files(*.mp4 *.mov)')
         if Model.fname != '':
             Model.videoList.append(Model.fname)
         
@@ -226,9 +222,9 @@ class Window(QWidget):
         self.importBoxList(base)
         
         #writes to a text file to create a list for the ffmpeg comman
-        self.file = open(r'bin/text.txt','w+')
+        #self.file = open(r'bin/text.txt','w+')
         #windows
-        #self.file = open(r'bin\text.txt','w+')
+        self.file = open(r'bin\text.txt','w+')
         
         for item in Model.videoList:
             self.file.write("file "+"'" + "%s'\n" %item)
@@ -237,17 +233,18 @@ class Window(QWidget):
 
         
         #FFMPEG command, runs the application from the OS to concactenate media files. TODO: fix the usage of different format/codec files
-        ffmpeg_command = ["ffmpeg","-y","-f","concat","-safe","0","-i",r"bin/text.txt","-vf","scale=1280:720","-acodec","copy",r"bin/output.mp4"]
+        #ffmpeg_command = ["ffmpeg","-y","-f","concat","-safe","0","-i",r"bin/text.txt","-vf","scale=1280:720","-acodec","copy",r"bin/output.mp4"]
         #windows mode
-        #ffmpeg_command = ["ffmpeg","-y","-f","concat","-safe","0","-i",r"bin\text.txt","-vf","scale=1280:720","-acodec","copy",r"bin\output.mp4"]
+        ffmpeg_command = ["ffmpeg","-y","-f","concat","-safe","0","-i",r"bin\text.txt","-vf","scale=1280:720","-acodec","copy",r"bin\output.mp4"]
+        #ffmpeg_subtitles = ["ffmpeg","-i",r"bin\output.mp4","-vf","subtitles=subtitles.srt",r"bin\movieSubtitles.mp4"]
         p = subprocess.Popen(ffmpeg_command,stdout=subprocess.PIPE)
+        #s = subprocess.Popen(ffmpeg_subtitles,stdout=subprocess.PIPE)
         out1,err1 = p.communicate()
         
-        
         #delete this for fix
-        abpath = os.path.abspath(r'bin/output.mp4')
+        #abpath = os.path.abspath(r'bin/output.mp4')
         #windows mode
-        #abpath = os.path.abspath(r'bin\output.mp4')
+        abpath = os.path.abspath(r'bin\output.mp4')
         self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(abpath)))
         self.playButton.setEnabled(True)
         self.update()
@@ -342,9 +339,9 @@ class Window(QWidget):
         self.subtitleLabel.setText(self.entry.get())
         self.subtitleLabel.show()
 
-        self.subtitleFile = open(r"bin/subtitles.srt", "a+")
+        #self.subtitleFile = open(r"bin/subtitles.srt", "a+")
         # Window
-        #self.subtitleFile = open(r"bin\subtitles.srt", "a+")
+        self.subtitleFile = open("subtitles.srt", "a+")
         self.subtitleFile.write(self.entry.get() + "\n")
         self.subtitleFile.close()
 
@@ -357,14 +354,13 @@ class Window(QWidget):
     #deletes videolist file on exit
     @atexit.register
     def goodbye():
-        file = open('bin/text.txt','w+')
+        #file = open('bin/text.txt','w+')
         #windows
-        #file = open('bin\text.txt','w+')
+        file = open('bin\text.txt','w+')
         file.truncate()
         #os.remove('bin/output.mp4')
         #windows mode
         os.remove('bin\output.mp4')
-        #os.remove('bin\output.mp4')
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
