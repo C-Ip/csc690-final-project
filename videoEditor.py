@@ -3,7 +3,7 @@ import sys, os, subprocess, atexit
 from PyQt5 import QtCore
 from PyQt5.QtMultimedia import QMediaContent,QMediaPlayer
 from PyQt5.QtMultimediaWidgets import QVideoWidget
-from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QCheckBox, QFileDialog
+from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QCheckBox, QFileDialog, QLineEdit
 from PyQt5.QtGui import QPixmap, QImage, QMouseEvent
 from PyQt5.QtCore import Qt, QObject, pyqtSignal, QUrl, QFileInfo, QTime
 from model import Model
@@ -51,7 +51,7 @@ class Window(QWidget):
         if videoDuration >= 5000:
             vidSeconds = int(round((videoDuration/1000) % 60))
             print(str(vidSeconds))
-            Model.buttonList[len(Model.videoList)-1].resize(20 + (vidSeconds * 9),130)
+            Model.buttonList[len(Model.videoList)-1].resize(24 + (vidSeconds * 9),130)
         Model.buttonList[len(Model.videoList)-1].setStyleSheet("border: 2px solid black")
         index = 0
         Model.buttonList[len(Model.videoList)-1].clicked.connect(partial(self.timelinetoVid, len(Model.videoList)-1))
@@ -106,8 +106,6 @@ class Window(QWidget):
         self.timeLineLabel.setStyleSheet("border: 2px solid black")
         self.timeLineLabel.setGeometry(20, 625, 1400, 130)
 
-        
-
         # Timeline for subtitles
         self.subTimeLineLabel = QLabel(self)
         self.subTimeLineLabel.setStyleSheet("border: 2px solid black")
@@ -156,8 +154,8 @@ class Window(QWidget):
         self.fullScreenButton = QPushButton("Fullscreen", self)
         self.fullScreenButton.setStyleSheet("background-color: gray")
         self.fullScreenButton.move(1000, 380)
-
-        self.addSubtitleButton = QPushButton("Add Subtitles", self)
+            
+        self.addSubtitleButton = QPushButton("Add Subtitles", self)                                          
         self.addSubtitleButton.setStyleSheet("background-color: gray")
         self.addSubtitleButton.move(800, 500)
         self.addSubtitleButton.clicked.connect(self.addSubtitles)
@@ -194,6 +192,8 @@ class Window(QWidget):
             
     # import function to get the urls needed to display in the mediaplayer widget
     def importFunction(self):
+        #Model.fname, _ = QFileDialog.getOpenFileName(self, 'Open file', '../desktop','All files(*.jpeg *.mp4 *.mov);;Image files(*.jpeg);;Video Files(*.mp4 *.mov)')
+        #windows
         Model.fname, _ = QFileDialog.getOpenFileName(self, 'Open file', '..\desktop','All files(*.jpeg *.mp4 *.mov);;Image files(*.jpeg);;Video Files(*.mp4 *.mov)')
         if Model.fname != '':
             Model.videoList.append(Model.fname)
@@ -205,7 +205,10 @@ class Window(QWidget):
         self.importBoxList(base)
         
         #writes to a text file to create a list for the ffmpeg comman
+        #self.file = open(r'bin/text.txt','w+')
+        #windows
         self.file = open(r'bin\text.txt','w+')
+        
         for item in Model.videoList:
             self.file.write("file "+"'" + "%s'\n" %item)
         #print (str(item))
@@ -213,12 +216,16 @@ class Window(QWidget):
         
         currentdir = os.getcwd()
         #FFMPEG command, runs the application from the OS to concactenate media files. TODO: fix the usage of different format/codec files
+        #ffmpeg_command = ["ffmpeg","-y","-f","concat","-safe","0","-i",r"bin/text.txt","-vf","scale=1280:720","-acodec","copy",r"bin/output.mp4"]
+        #windows mode
         ffmpeg_command = ["ffmpeg","-y","-f","concat","-safe","0","-i",r"bin\text.txt","-vf","scale=1280:720","-acodec","copy",r"bin\output.mp4"]
         p = subprocess.Popen(ffmpeg_command,stdout=subprocess.PIPE)
         out1,err1 = p.communicate()
         
         
         #delete this for fix
+        #abpath = os.path.abspath(r'bin/output.mp4')
+        #windows mode
         abpath = os.path.abspath(r'bin\output.mp4')
         self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(abpath)))
         self.playButton.setEnabled(True)
@@ -267,39 +274,62 @@ class Window(QWidget):
             self.markValue += 5
 
     #deletes videolist file on exit
-    @atexit.register
-    def goodbye():
-        file = open('bin/text.txt','w+')
-        file.truncate()
-        os.remove('bin/output.mp4')
 
+    
     # Creates a new window with a text box to enter subtitles
     def addSubtitles(self):
         self.root = Tk()
         self.entry = Entry(self.root)
-        instructions = Label(self.root, text = "Please enter the text for the subtitles")
+        self.timePosition = Entry(self.root)
+        instructions = Label(self.root, text = "Please enter the text for the subtitles:")
+        text = Label(self.root, text = "Time you wish to insert subtitle:")
         self.root.title("Add Subtitles")
         self.root.geometry("400x300+500+200")
         addButton = Button(self.root, text="Create Subtitle", command = self.printSubtitles)
         closeButton = Button(self.root, text="Cancel", command = self.destroySecondWindow)
         self.entry.pack()
+        self.timePosition.pack()
         closeButton.pack()
         addButton.pack()
         instructions.pack()
-        closeButton.place(x = "300", y = "100")
-        addButton.place(x = "50", y = "100")
-        instructions.place(x = "80", y = "200")
-        self.entry.place(x = "20", y = "10", height = "30", width = "360")
+        text.pack()
+        instructions.place(x = "80", y = "10")
+        self.entry.place(x = "20", y = "50", height = "30", width = "360")
+        text.place(x = "100", y = "100")
+        self.timePosition.place(x = "150", y = "130", height = "30", width  = "100")
+        closeButton.place(x = "300", y = "180")
+        addButton.place(x = "30", y = "180")
 
         self.root.mainloop()
 
     # Prints the text entered in the textbox in the second window
     def printSubtitles(self):
-        print(self.entry.get())
+        self.subtitleLabel = QLabel(self)
+        self.subtitleLabel.setGeometry(20, 770, 40, 80)
+        self.subtitleLabel.setStyleSheet("border: 2px solid red")
+        self.subtitleLabel.setText(self.entry.get())
+        self.subtitleLabel.show()
+
+        self.subtitleFile = open(r"bin\subtitles.txt", "a+")
+        self.subtitleFile.write(self.entry.get() + "\n")
+        #self.subtitleFile.write(self.entry.get())
+        self.subtitleFile.close()
+
+        self.destroySecondWindow()
 
     # Destroys the second window
     def destroySecondWindow(self):
         self.root.destroy()
+
+    @atexit.register
+    def goodbye():
+        #file = open('bin/text.txt','w+')
+        #windows
+        file = open('bin\text.txt','w+')
+        file.truncate()
+        #os.remove('bin/output.mp4')
+        #windows mode
+        os.remove('bin\output.mp4')
         
 if __name__ == '__main__':
     app = QApplication(sys.argv)
