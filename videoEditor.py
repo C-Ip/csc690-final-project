@@ -192,7 +192,9 @@ class Window(QWidget):
             
     # import function to get the urls needed to display in the mediaplayer widget
     def importFunction(self):
-        Model.fname, _ = QFileDialog.getOpenFileName(self, 'Open file', '..\desktop','All files(*.jpeg *.mp4 *.mov);;Image files(*.jpeg);;Video Files(*.mp4 *.mov)')
+        Model.fname, _ = QFileDialog.getOpenFileName(self, 'Open file', '../desktop','All files(*.jpeg *.mp4 *.mov);;Image files(*.jpeg);;Video Files(*.mp4 *.mov)')
+        #windows
+        #Model.fname, _ = QFileDialog.getOpenFileName(self, 'Open file', '..\desktop','All files(*.jpeg *.mp4 *.mov);;Image files(*.jpeg);;Video Files(*.mp4 *.mov)')
         if Model.fname != '':
             Model.videoList.append(Model.fname)
         
@@ -203,7 +205,10 @@ class Window(QWidget):
         self.importBoxList(base)
         
         #writes to a text file to create a list for the ffmpeg comman
-        self.file = open(r'bin\text.txt','w+')
+        self.file = open(r'bin/text.txt','w+')
+        #windows
+        #self.file = open(r'bin\text.txt','w+')
+        
         for item in Model.videoList:
             self.file.write("file "+"'" + "%s'\n" %item)
         #print (str(item))
@@ -211,13 +216,17 @@ class Window(QWidget):
         
         currentdir = os.getcwd()
         #FFMPEG command, runs the application from the OS to concactenate media files. TODO: fix the usage of different format/codec files
-        ffmpeg_command = ["ffmpeg","-y","-f","concat","-safe","0","-i",r"bin\text.txt","-vf","scale=1280:720","-acodec","copy",r"bin\output.mp4"]
+        ffmpeg_command = ["ffmpeg","-y","-f","concat","-safe","0","-i",r"bin/text.txt","-vf","scale=1280:720","-acodec","copy",r"bin/output.mp4"]
+        #windows mode
+        #ffmpeg_command = ["ffmpeg","-y","-f","concat","-safe","0","-i",r"bin\text.txt","-vf","scale=1280:720","-acodec","copy",r"bin\output.mp4"]
         p = subprocess.Popen(ffmpeg_command,stdout=subprocess.PIPE)
         out1,err1 = p.communicate()
         
         
         #delete this for fix
-        abpath = os.path.abspath(r'bin\output.mp4')
+        abpath = os.path.abspath(r'bin/output.mp4')
+        #windows mode
+        #abpath = os.path.abspath(r'bin\output.mp4')
         self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(abpath)))
         self.playButton.setEnabled(True)
         self.update()
@@ -265,13 +274,10 @@ class Window(QWidget):
             self.markValue += 5
 
     #deletes videolist file on exit
-    @atexit.register
-    def goodbye():
-        file = open('bin/text.txt','w+')
-        file.truncate()
-        os.remove('bin/output.mp4')
+
 
     # Creates a new window with a text box to enter subtitles
+    """
     def addSubtitles(self):
         self.root = Tk()
         self.entry = Entry(self.root)
@@ -290,7 +296,7 @@ class Window(QWidget):
         self.entry.place(x = "20", y = "10", height = "30", width = "360")
 
         self.root.mainloop()
-
+    """
     # Prints the text entered in the textbox in the second window
     def printSubtitles(self):
         print(self.entry.get())
@@ -298,6 +304,16 @@ class Window(QWidget):
     # Destroys the second window
     def destroySecondWindow(self):
         self.root.destroy()
+
+    @atexit.register
+    def goodbye():
+        file = open('bin/text.txt','w+')
+        #windows
+        #file = open('bin\text.txt','w+')
+        file.truncate()
+        os.remove('bin/output.mp4')
+        #windows mode
+        #os.remove('bin\output.mp4')
         
 if __name__ == '__main__':
     app = QApplication(sys.argv)
