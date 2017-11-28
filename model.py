@@ -13,6 +13,7 @@ class Model(QWidget):
     importLabel = []
     videoList = []
     fname = None
+    aname = None
     buttonList = []
     importList = []
     videoListLength = [0]*20
@@ -21,4 +22,9 @@ class Model(QWidget):
     subtitleList = []
     subtitleButtonList = []
     positionarray = []
+<<<<<<< HEAD
     
+=======
+    importAudioList = []
+    audioList = []
+>>>>>>> 7a5f0830044a7cca086500e2cddab758f5e5b434
