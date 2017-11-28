@@ -292,12 +292,13 @@ class Window(QWidget):
         #Model.fname, _ = QFileDialog.getOpenFileName(self, 'Open file', '..\desktop','All files(*.jpeg *.mp4 *.mov);;Image files(*.jpeg);;Video Files(*.mp4 *.mov)')
         if Model.fname != '':
             Model.videoList.append(Model.fname)
-        
+            fi = QFileInfo(Model.fname)
+            base = fi.completeBaseName()
+            self.importBoxList(base)
         # this part changes the url into just the filename to be used in the import list
-        fi = QFileInfo(Model.fname)
-        base = fi.completeBaseName()
+
         #self.createButton()
-        self.importBoxList(base)
+        
         #TODO//:: needs to move to another function, so ffmpegcommand is called first
         #ffmpeg_subtitles = ["ffmpeg","-y","-i",r"bin\output.mp4","-i",r"bin\subtitles.srt","-c:v","libx264","-ar","44100","-ac","2","-ab","128k","-strict","-2","-c:s","mov_text","-map","0","-map","1",r"bin\outputfile.mp4"]
         #ffmpeg_subtitles = ["ffmpeg","-y","-i",r"bin/output.mp4","-i",r"bin/subtitles.srt","-c:v","libx264","-ar","44100","-ac","2","-ab","128k","-strict","-2","-c:s","mov_text","-map","0","-map","1",r"bin/outputfile.mp4"]
@@ -309,9 +310,9 @@ class Window(QWidget):
         Model.aname, _ = QFileDialog.getOpenFileName(self, 'Open audio file', '../','All audio files(*.mp3 *.wav)')
         if Model.aname != '':
             Model.audioList.append(Model.aname)
-        fi = QFileInfo(Model.aname)
-        base = fi.completeBaseName()
-        self.importAudioList(base)
+            fi = QFileInfo(Model.aname)
+            base = fi.completeBaseName()
+            self.importAudioList(base)
 
     #clicking each label on the timeline leads here. currently loads video from videourl contained in videoList
     def timelinetoVid(self,index):
