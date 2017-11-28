@@ -6,7 +6,7 @@ from PyQt5.QtMultimedia import QMediaContent,QMediaPlayer
 from PyQt5.QtMultimediaWidgets import QVideoWidget
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QCheckBox, QFileDialog, QLineEdit
 from PyQt5.QtGui import QPixmap, QImage, QMouseEvent
-from PyQt5.QtCore import Qt, QObject, pyqtSignal, QUrl, QFileInfo, QTime
+from PyQt5.QtCore import Qt, QObject, pyqtSignal, QUrl, QFileInfo, QTimer
 from model import Model
 from functools import partial
 from tkinter import Tk, Toplevel, Button, Entry, Label
@@ -31,6 +31,8 @@ class Window(QWidget):
         self.importBox()
         self.importPreviewBox()
         #self.createLabel()
+
+        self.timer = QTimer(self)
         
         #video player creation, move to own definition later
         self.mediaPlayer = QMediaPlayer(self)
@@ -140,9 +142,9 @@ class Window(QWidget):
         self.importButton.clicked.connect(self.importFunction)
 
         # Change to fullscreen button
-        self.fullScreenButton = QPushButton("Fullscreen", self)
-        self.fullScreenButton.setStyleSheet("background-color: gray")
-        self.fullScreenButton.move(1000, 380)
+        #self.fullScreenButton = QPushButton("Fullscreen", self)
+        #self.fullScreenButton.setStyleSheet("background-color: gray")
+        #self.fullScreenButton.move(1000, 380)
         
         self.addSubtitleButton = QPushButton("Add Subtitles", self)
         self.addSubtitleButton.setStyleSheet("background-color: gray")
@@ -173,12 +175,13 @@ class Window(QWidget):
     
         #creates labels/buttons, as the thumbnails of each video imported, TODO:implement with import list as proxy
     def createButton(self):
-        videoDuration = self.mediaPlayer.duration()
-        Model.videoListLength.append(videoDuration)
+        self.videoDuration = self.mediaPlayer.duration()
+        Model.videoListLength.append(self.videoDuration)
         Model.buttonList.append(QPushButton(str(Model.current+1),self))
-        position = int(self.positioningRequest.text())
+        self.position = int(self.positioningRequest.text())
+        Window.totalDuration += self.position * 1000
         
-        Model.positionarray.append(positionObject(position,len(Model.buttonList)-1))
+        Model.positionarray.append(positionObject(self.position,len(Model.buttonList)-1))
         sorted(Model.positionarray,key = attrgetter('timepos'),reverse = True)
         
         #print("Video duration: " + str(self.mediaPlayer.duration()))
@@ -190,12 +193,12 @@ class Window(QWidget):
             Model.buttonList[len(Model.videoList)-1].resize(24 + (vidSeconds * 9),130)
         
         """
-        vidSeconds = int(round((videoDuration/1000) % 60))
+        vidSeconds = int(round((self.videoDuration/1000) % 60))
         Model.buttonList[len(Model.buttonList)-1].resize(24 + (vidSeconds * 9),130)
         Model.buttonList[len(Model.buttonList)-1].setStyleSheet("border: 2px solid black")
         
         
-        Model.buttonList[len(Model.buttonList)-1].move(20+(position)*11,625)
+        Model.buttonList[len(Model.buttonList)-1].move(20+(self.position)*11,625)
         
         
         
@@ -229,7 +232,7 @@ class Window(QWidget):
         #windows
         abpath = os.path.abspath(r'bin\output.mp4')
         #abpath = os.path.abspath(r'bin/output.mp4')
-        self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(abpath)))
+        #self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(abpath)))
         self.playButton.setEnabled(True)
         self.update()
         
@@ -257,12 +260,27 @@ class Window(QWidget):
                     self.playButton.setText("Play")
                     break
         '''
-        if self.mediaPlayer.state() == QMediaPlayer.PlayingState:
-            self.mediaPlayer.pause()
-            self.playButton.setText("Play")
+        if self.timer.isActive():
+            if self.mediaPlayer.state() == QMediaPlayer.PlayingState:
+                self.mediaPlayer.pause()
+                self.playButton.setText("Play")
+                self.pausedTime = self.timer.remainingTime()
+                self.timer.stop()
+                print(self.pausedTime)
+            else:
+                self.mediaPlayer.play()
+                self.playButton.setText("Pause")
         else:
-            self.mediaPlayer.play()
-            self.playButton.setText("Pause")
+            self.timer.start(Window.totalDuration)
+            if self.mediaPlayer.state() == QMediaPlayer.PlayingState:
+                self.mediaPlayer.pause()
+                self.playButton.setText("Play")
+                self.pausedTime = self.timer.remainingTime()
+                self.timer.stop()
+                print(self.pausedTime)
+            else:
+                self.mediaPlayer.play()
+                self.playButton.setText("Pause")
             
     # import function to get the urls needed to display in the mediaplayer widget
     def importFunction(self):
@@ -278,10 +296,10 @@ class Window(QWidget):
         #self.createButton()
         self.importBoxList(base)
         #TODO//:: needs to move to another function, so ffmpegcommand is called first
-        ffmpeg_subtitles = ["ffmpeg","-y","-i",r"bin\output.mp4","-i",r"bin\subtitles.srt","-c:v","libx264","-ar","44100","-ac","2","-ab","128k","-strict","-2","-c:s","mov_text","-map","0","-map","1",r"bin\outputfile.mp4"]
+        #ffmpeg_subtitles = ["ffmpeg","-y","-i",r"bin\output.mp4","-i",r"bin\subtitles.srt","-c:v","libx264","-ar","44100","-ac","2","-ab","128k","-strict","-2","-c:s","mov_text","-map","0","-map","1",r"bin\outputfile.mp4"]
         #ffmpeg_subtitles = ["ffmpeg","-y","-i",r"bin/output.mp4","-i",r"bin/subtitles.srt","-c:v","libx264","-ar","44100","-ac","2","-ab","128k","-strict","-2","-c:s","mov_text","-map","0","-map","1",r"bin/outputfile.mp4"]
-        s = subprocess.Popen(ffmpeg_subtitles,stdout=subprocess.PIPE) #.call to fix waiting issue
-        out1,err1 = s.communicate()
+        #s = subprocess.Popen(ffmpeg_subtitles,stdout=subprocess.PIPE) #.call to fix waiting issue
+        #out1,err1 = s.communicate()
 
         
     #clicking each label on the timeline leads here. currently loads video from videourl contained in videoList
@@ -295,10 +313,10 @@ class Window(QWidget):
                 #ffmpeg_separation = ["ffmpeg","-t",str(distance),"-s","640x580","-f","rawvideo","-pix_fmt","rgb24","-r","25","-i","/dev/zero",firststr]
 
                 # Windows
-                firststr= r"bin\blackvideo" + str(0) +".mp4"
-                ffmpeg_separation = ["ffmpeg","-t",str(distance),"-s","640x580","-f","rawvideo","-pix_fmt","rgb24","-r","25","-i","\dev\zero",firststr]
-                black = subprocess.Popen(ffmpeg_separation,stdout=subprocess.PIPE)
-                out1,err1 = black.communicate()
+                #firststr= r"bin\blackvideo" + str(0) +".mp4"
+                #ffmpeg_separation = ["ffmpeg","-t",str(distance),"-s","640x580","-f","rawvideo","-pix_fmt","rgb24","-r","25","-i","\dev\zero",firststr]
+                #black = subprocess.Popen(ffmpeg_separation,stdout=subprocess.PIPE)
+                #out1,err1 = black.communicate()
         else:
             if len(positionarray)%2 == 0:
                 for  x in range(len(positionarray)-1):
@@ -312,10 +330,10 @@ class Window(QWidget):
                     # Windows
                     firststr= r"bin\blackvideo" + str(x) +".mp4"
                     secstr = r"bin\blackvideo" + str(x+1) +".mp4"
-                    ffmpeg_separation = ["ffmpeg","-t",str(distance),"-s","640x580","-f","rawvideo","-pix_fmt","rgb24","-r","25","-i","\dev\zero",firststr]
+                    #ffmpeg_separation = ["ffmpeg","-t",str(distance),"-s","640x580","-f","rawvideo","-pix_fmt","rgb24","-r","25","-i","\dev\zero",firststr]
                     
-                    black = subprocess.call(ffmpeg_separation,stdout=subprocess.PIPE)
-                    out1,err1 = black.communicate()
+                    #black = subprocess.call(ffmpeg_separation,stdout=subprocess.PIPE)
+                    #out1,err1 = black.communicate()
                     #ffmpeg_separation2= ["ffmpeg","-t",str(finaldistance),"-s","640:480","-f","rawvideo","-pix_fmt","rgb24","-r","25","-i","/dev/zero",secstr]
                     #windows
                     #ffmpeg_separation = ["ffmpeg","-t",str(distance),"-s","640:480","-f","rawvideo","-pix_fmt","rgb24","-r","25","-i","\dev\zero",r"bin\blackvideo"+str(x)+".mov"]

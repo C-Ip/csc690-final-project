@@ -21,3 +21,4 @@ class Model(QWidget):
     subtitleList = []
     subtitleButtonList = []
     positionarray = []
+    
