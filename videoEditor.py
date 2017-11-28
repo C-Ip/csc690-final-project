@@ -214,7 +214,7 @@ class Window(QWidget):
         """
         vidSeconds = int(round((videoDuration/1000) % 60))
         Model.buttonList[len(Model.buttonList)-1].resize(24 + (vidSeconds * 9),130)
-        Model.buttonList[len(Model.buttonList)-1].setStyleSheet("border: 2px solid black")
+        Model.buttonList[len(Model.buttonList)-1].setStyleSheet("border: 1px solid black")
         
         
         Model.buttonList[len(Model.buttonList)-1].move(20+(position)*11,625)
@@ -394,7 +394,7 @@ class Window(QWidget):
             else:
                 self.markerLabel.move(20 + (self.markValue * 11), 600)
             self.markerLabel.setText(str(self.markValue) + "\n" + "|")
-            self.markerLabel.setStyleSheet("font: 20px")
+            self.markerLabel.setStyleSheet("font: 15px; color: purple")
             self.markValue += 5
 
 
