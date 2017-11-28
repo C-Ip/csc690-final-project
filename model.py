@@ -19,10 +19,8 @@ class Model(QWidget):
     videoListLength = [0]*20
     current = 0
     currentTimeVid = 1
-<<<<<<< HEAD
     subtitleList = []
-=======
     positionarray = []
     importAudioList = []
     audioList = []
->>>>>>> 7a5f0830044a7cca086500e2cddab758f5e5b434
+
