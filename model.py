@@ -13,9 +13,12 @@ class Model(QWidget):
     importLabel = []
     videoList = []
     fname = None
+    aname = None
     buttonList = []
     importList = []
     videoListLength = [0]*20
     current = 0
     currentTimeVid = 1
     positionarray = []
+    importAudioList = []
+    audioList = []
