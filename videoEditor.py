@@ -173,27 +173,45 @@ class Window(QWidget):
         self.addSubtitleButton.clicked.connect(self.addSubtitles)
 
         # Move to timeline button
-        self.moveButton = QPushButton("Move to Timeline", self)
+        self.moveButton = QPushButton("Move Video", self)
         self.moveButton.setStyleSheet("background-color: gray")
-        self.moveButton.move(400, 500)
+        self.moveButton.move(300, 460)
         self.moveButton.clicked.connect(self.createButton)
         self.moveButton.setEnabled(False)
+        self.moveButton.setHidden(True)
+        
+        #move audio to timeline
+        self.moveAudio = QPushButton("Move Audio",self)
+        self.moveAudio.setStyleSheet("background-color:gray")
+        self.moveAudio.move(300,490)
+        #self.moveAudio.clicked.connect(self.createAudioThumbs)
+        self.moveAudio.setEnabled(False)
+        self.moveAudio.setHidden(True)
+        
     
         #qlineedit
         self.positioningRequest = QLineEdit(self)
-        self.positioningRequest.move(400,460)
-        self.positioningRequest.resize(100,25)
+        self.positioningRequest.setPlaceholderText("Enter Position(seconds)")
+        self.positioningRequest.move(150,460)
+        self.positioningRequest.resize(150,25)
         self.positioningRequest.setEnabled(False)
         
-        
+        self.audioPosition = QLineEdit(self)
+        self.audioPosition.setPlaceholderText("Enter Position(seconds)")
+        self.audioPosition.move(150,490)
+        self.audioPosition.resize(150,25)
+        self.audioPosition.setEnabled(False)
     
-    
+        """
         self.instruct = QLabel(self)
         self.instruct.setText("Enter position(seconds):")
         self.instruct.move(250,465)
-    
+        """
     
         #creates labels/buttons, as the thumbnails of each video imported, TODO:implement with import list as proxy
+    def createAudioThumbs(self):
+        #audioDuration = self.
+        print("audio")
     def createButton(self):
         videoDuration = self.mediaPlayer.duration()
         Model.videoListLength.append(videoDuration)
@@ -308,6 +326,8 @@ class Window(QWidget):
 
     def importAudioFunction(self):
         Model.aname, _ = QFileDialog.getOpenFileName(self, 'Open audio file', '../','All audio files(*.mp3 *.wav)')
+        #windows
+        #Model.aname, _= QFileDialog.getOpenFileName(self, 'Open audio file','..\','All audio files(*.mp3 *.wav)')
         if Model.aname != '':
             Model.audioList.append(Model.aname)
             fi = QFileInfo(Model.aname)
@@ -365,10 +385,10 @@ class Window(QWidget):
         self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(Model.videoList[index])))
         self.playButton.setEnabled(True)
         self.moveButton.setEnabled(True)
+        self.moveButton.setHidden(False)
         self.positioningRequest.setEnabled(True)
         Model.current = index
         
-
 
     def importAudioClicked(self,index):
         for i in range(len(Model.importAudioList)):
