@@ -140,7 +140,7 @@ class Window(QWidget):
         else:
         '''
         self.playTimeLabel.setText(str(self.hours) + ":" + str(self.minutes) + ":" + str(self.seconds))
-        self.playTimeLabel.setStyleSheet("font-size: 40px")
+        self.playTimeLabel.setStyleSheet("font-size: 40px; alignment:center-align")
         self.playTimeLabel.move(450, 500)
         self.playTimeLabel.show()
         #self.createButton()
@@ -501,6 +501,7 @@ class Window(QWidget):
         self.moveButton.setEnabled(True)
         self.moveButton.setHidden(False)
         self.positioningRequest.setEnabled(True)
+        self.positionSlider.setEnabled(True)
         Model.current = index
     
         
@@ -512,6 +513,7 @@ class Window(QWidget):
         self.cleanTimeline()
         self.hideImportButtons()
         self.hideTimeButtons()
+        self.positionSlider.setEnabled(True)
         
         Model.importAudioList[index].setStyleSheet("border: 2px solid red")
         self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(Model.audioList[index])))
