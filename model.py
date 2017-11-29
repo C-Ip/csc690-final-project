@@ -9,6 +9,7 @@ class Model(QWidget):
     W = 0
     H = 0
     B = 0
+    pausedTime = 0
     timelineCount = 0
     importLabel = []
     videoList = []
@@ -29,3 +30,4 @@ class Model(QWidget):
     currentVidTimeLineIndex = 0
     currentAudioTimeIndex = 0
     timelineState = False
+    videos = []

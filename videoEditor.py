@@ -275,7 +275,8 @@ class Window(QWidget):
         Model.audioThumbList.append(QPushButton(str(Model.current+1),self))
         position = int(self.audioPosition.text())
         self.audioDuration= self.mediaPlayer.duration()
-        #needs minutes
+        #Added minutes
+        self.audioMinutes = int(round((self.audioDuration/60000) % 60))
         audioSeconds = int(round((self.audioDuration/1000)% 60))
         Model.audioThumbList[len(Model.audioThumbList)-1].resize(24 +(audioSeconds * 3.5),60)
         Model.audioThumbList[len(Model.audioThumbList)-1].setStyleSheet("border: 1px solid black")
@@ -371,31 +372,33 @@ class Window(QWidget):
                     self.playButton.setText("Play")
                     break
         '''
-        
-        if self.timer.isActive():
-            # This needs to be outside of the play function
-            #self.timer.singleShot(self.position * 1000, self.mediaPlayer.play())
-            if self.mediaPlayer.state() == QMediaPlayer.PlayingState:
-                self.mediaPlayer.pause()
-                self.playButton.setText("Play")
-                self.pausedTime = self.timer.remainingTime()
-                self.timer.stop()
-                print(self.pausedTime)
-            else:
+        #print(Model.positionarray[0].timepos)
+
+        # Starts the timer at the last paused time instead of starting at the totalDuration each time.
+        print(Model.pausedTime)
+        if Model.pausedTime == 0:
+            print("Hello")
+            if self.timer.isActive() != True:
+                self.timer.start(Window.totalDuration)
                 self.mediaPlayer.play()
                 self.playButton.setText("Pause")
+            else:
+                self.mediaPlayer.pause()
+                self.playButton.setText("Play")
+                Model.pausedTime = self.timer.remainingTime()
+                self.timer.stop()
         else:
-            self.timer.start(Window.totalDuration)
-            if self.mediaPlayer.state() == QMediaPlayer.PlayingState:
-                self.mediaPlayer.pause()
-                self.playButton.setText("Play")
-                self.pausedTime = self.timer.remainingTime()
-                self.timer.stop()
-                print(self.pausedTime)
-            else:
+            print("AUSD")
+            if self.timer.isActive() != True:
+                self.timer.start(Model.pausedTime)
                 self.mediaPlayer.play()
                 self.playButton.setText("Pause")
-            
+            else:
+                self.mediaPlayer.pause()
+                self.playButton.setText("Play")
+                Model.pausedTime = self.timer.remainingTime()
+                self.timer.stop()
+        
     # import function to get the urls needed to display in the mediaplayer widget
     def importFunction(self):
         Model.fname, _ = QFileDialog.getOpenFileName(self, 'Open file', '../desktop','All files(*.jpeg *.mp4 *.mov);;Image files(*.jpeg);;Video Files(*.mp4 *.mov)')
@@ -403,8 +406,10 @@ class Window(QWidget):
         #Model.fname, _ = QFileDialog.getOpenFileName(self, 'Open file', '..\desktop','All files(*.jpeg *.mp4 *.mov);;Image files(*.jpeg);;Video Files(*.mp4 *.mov)')
         if Model.fname != '':
             Model.videoList.append(Model.fname)
+            print(Model.videoList)
             fi = QFileInfo(Model.fname)
             base = fi.completeBaseName()
+            print(base)
             self.importBoxList(base)
         # this part changes the url into just the filename to be used in the import list
 
