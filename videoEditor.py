@@ -31,6 +31,8 @@ class Window(QWidget):
         self.importBox()
         self.importPreviewBox()
         #self.createLabel()
+
+        self.timer = QTimer(self)
         
         #video player creation, move to own definition later
         self.mediaPlayer = QMediaPlayer(self)
