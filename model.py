@@ -25,3 +25,7 @@ class Model(QWidget):
     importAudioList = []
     audioList = []
     audioThumbList = []
+    importBoxState = 3
+    currentVidTimeLineIndex = 0
+    currentAudioTimeIndex = 0
+    timelineState = False
