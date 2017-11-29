@@ -100,12 +100,17 @@ class Window(QWidget):
         
         self.timeLineLabel = QLabel(self)
         self.timeLineLabel.setStyleSheet("border: 2px solid black")
-        self.timeLineLabel.setGeometry(20, 625, 1400, 130)
+        self.timeLineLabel.setGeometry(20, 585, 1400, 130)
 
         # Timeline for subtitles
         self.subTimeLineLabel = QLabel(self)
         self.subTimeLineLabel.setStyleSheet("border: 2px solid black")
-        self.subTimeLineLabel.setGeometry(20, 770, 1400, 80)
+        self.subTimeLineLabel.setGeometry(20, 790, 1400, 50)
+    
+        # timeline audio
+        self.audioTimeLine = QLabel(self)
+        self.audioTimeLine.setStyleSheet("border: 2px solid black")
+        self.audioTimeLine.setGeometry(20,720,1500,60)
 
     def durationChanged(self, duration):
         if Window.totalDuration == 0:
@@ -127,7 +132,7 @@ class Window(QWidget):
         '''
         self.playTimeLabel.setText(str(self.hours) + ":" + str(self.minutes) + ":" + str(self.seconds))
         self.playTimeLabel.setStyleSheet("font-size: 40px")
-        self.playTimeLabel.move(650, 550)
+        self.playTimeLabel.move(450, 500)
         self.playTimeLabel.show()
         #self.createButton()
         
@@ -235,7 +240,7 @@ class Window(QWidget):
         Model.buttonList[len(Model.buttonList)-1].setStyleSheet("border: 1px solid black")
         
         
-        Model.buttonList[len(Model.buttonList)-1].move(20+(position)*11,625)
+        Model.buttonList[len(Model.buttonList)-1].move(20+(position)*11,585)
         
         
         
@@ -318,8 +323,6 @@ class Window(QWidget):
         # this part changes the url into just the filename to be used in the import list
 
         #self.createButton()
-
-        self.importBoxList(base)
         #TODO//:: needs to move to another function, so ffmpegcommand is called first
         ffmpeg_subtitles = ["ffmpeg","-y","-i",r"bin\output.mp4","-i",r"bin\subtitles.srt","-c:v","libx264","-ar","44100","-ac","2","-ab","128k","-strict","-2","-c:s","mov_text","-map","0","-map","1",r"bin\outputfile.mp4"]
         #ffmpeg_subtitles = ["ffmpeg","-y","-i",r"bin/output.mp4","-i",r"bin/subtitles.srt","-c:v","libx264","-ar","44100","-ac","2","-ab","128k","-strict","-2","-c:s","mov_text","-map","0","-map","1",r"bin/outputfile.mp4"]
@@ -415,9 +418,19 @@ class Window(QWidget):
     #creates the timeline
     def timeMarks(self):
         self.markers = QLabel(self)
-        self.markers.setGeometry(20, 595, 1400, 30)
+        self.markers.setGeometry(20, 555, 1400, 30)
         self.markers.setStyleSheet("border: 2px solid black")
         self.markValue = 0
+        while self.markValue <= 120:
+            self.markerLabel = QLabel(self)
+            if self.markValue == 0:
+                self.markerLabel.move(20, 555)
+            else:
+                self.markerLabel.move(20 + (self.markValue * 11), 555)
+            self.markerLabel.setText(str(self.markValue) + "\n" + "|")
+            self.markerLabel.setStyleSheet("font: 15px; color: purple")
+            self.markValue += 5
+        """
         while self.markValue <= 120:
             self.markerLabel = QLabel(self)
             if self.markValue == 0:
@@ -427,6 +440,9 @@ class Window(QWidget):
             self.markerLabel.setText(str(self.markValue) + "\n" + "|")
             self.markerLabel.setStyleSheet("font: 15px; color: purple")
             self.markValue += 5
+        """
+
+
 
 
     #deletes videolist file on exit
@@ -474,11 +490,11 @@ class Window(QWidget):
         Model.subtitleList.append(self.entry.get()) 
 
         self.subtitleDuration = int(self.subLength.get())
-        Model.buttonList[len(Model.subtitleList)-1].resize(24 + (self.subtitleDuration * 9),130)
+        Model.buttonList[len(Model.subtitleList)-1].resize(24 + (self.subtitleDuration * 9),50)
         Model.buttonList[len(Model.subtitleList)-1].setStyleSheet("border: 2px solid black")
         
         subPosition = int(self.text.get())
-        Model.buttonList[len(Model.subtitleList)-1].move(20+(subPosition)*11,770)
+        Model.buttonList[len(Model.subtitleList)-1].move(20+(subPosition)*11,790)
         
 
         #self.subtitleFile = open(r"bin/subtitles.srt", "a+")
