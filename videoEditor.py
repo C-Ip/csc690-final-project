@@ -215,7 +215,12 @@ class Window(QWidget):
     
         #creates labels/buttons, as the thumbnails of each video imported, TODO:implement with import list as proxy
     def createAudioThumbs(self):
-        #audioDuration = self.
+        
+        Model.audioThumbList.append(QPushButton(str(Model.current+1),self))
+        position = int(self.audioPosition.text())
+        Model.audioThumbList[len(Model.audioThumbList)-1].resize(24 +(9),60)
+        Model.audioThumbList[len(Model.audioThumbList)-1].setStyleSheet("border: 1px solid black")
+        Model.audioThumbList[len(Model.audioThumbList)-1].move(20+(position)*11,720)
         print("audio")
     def createButton(self):
         videoDuration = self.mediaPlayer.duration()

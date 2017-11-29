@@ -23,4 +23,4 @@ class Model(QWidget):
     positionarray = []
     importAudioList = []
     audioList = []
-
+    audioThumbList = []
