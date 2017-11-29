@@ -15,6 +15,7 @@ from positionObject import positionObject
 
 class Window(QWidget):
     totalDuration = 0
+    subtitleIndex = 1
     
     def __init__(self):
         super().__init__()
@@ -110,7 +111,7 @@ class Window(QWidget):
         # timeline audio
         self.audioTimeLine = QLabel(self)
         self.audioTimeLine.setStyleSheet("border: 2px solid black")
-        self.audioTimeLine.setGeometry(20,720,1500,60)
+        self.audioTimeLine.setGeometry(20,720,1400,60)
 
     def durationChanged(self, duration):
         if Window.totalDuration == 0:
@@ -308,12 +309,27 @@ class Window(QWidget):
                     self.playButton.setText("Play")
                     break
         '''
-        if self.mediaPlayer.state() == QMediaPlayer.PlayingState:
-            self.mediaPlayer.pause()
-            self.playButton.setText("Play")
+        if self.timer.isActive():
+            if self.mediaPlayer.state() == QMediaPlayer.PlayingState:
+                self.mediaPlayer.pause()
+                self.playButton.setText("Play")
+                self.pausedTime = self.timer.remainingTime()
+                self.timer.stop()
+                print(self.pausedTime)
+            else:
+                self.mediaPlayer.play()
+                self.playButton.setText("Pause")
         else:
-            self.mediaPlayer.play()
-            self.playButton.setText("Pause")
+            self.timer.start(Window.totalDuration)
+            if self.mediaPlayer.state() == QMediaPlayer.PlayingState:
+                self.mediaPlayer.pause()
+                self.playButton.setText("Play")
+                self.pausedTime = self.timer.remainingTime()
+                self.timer.stop()
+                print(self.pausedTime)
+            else:
+                self.mediaPlayer.play()
+                self.playButton.setText("Pause")
             
     # import function to get the urls needed to display in the mediaplayer widget
     def importFunction(self):
@@ -343,9 +359,9 @@ class Window(QWidget):
 
 
     def importAudioFunction(self):
-        Model.aname, _ = QFileDialog.getOpenFileName(self, 'Open audio file', '../','All audio files(*.mp3 *.wav)')
+        #Model.aname, _ = QFileDialog.getOpenFileName(self, 'Open audio file', '../desktop','All audio files(*.mp3 *.wav)')
         #windows
-        #Model.aname, _= QFileDialog.getOpenFileName(self, 'Open audio file','..\','All audio files(*.mp3 *.wav)')
+        Model.aname, _= QFileDialog.getOpenFileName(self, 'Open audio file','..\desktop','All audio files(*.mp3 *.wav)')
         if Model.aname != '':
             Model.audioList.append(Model.aname)
             fi = QFileInfo(Model.aname)
@@ -435,17 +451,28 @@ class Window(QWidget):
             self.markerLabel.setText(str(self.markValue) + "\n" + "|")
             self.markerLabel.setStyleSheet("font: 15px; color: purple")
             self.markValue += 5
-        """
+        self.markValue = 0
         while self.markValue <= 120:
             self.markerLabel = QLabel(self)
             if self.markValue == 0:
-                self.markerLabel.move(20, 600)
+                self.markerLabel.move(20, 710)
             else:
-                self.markerLabel.move(20 + (self.markValue * 11), 600)
-            self.markerLabel.setText(str(self.markValue) + "\n" + "|")
+                self.markerLabel.move(20 + (self.markValue * 11), 710)
+            self.markerLabel.setText("|")
             self.markerLabel.setStyleSheet("font: 15px; color: purple")
             self.markValue += 5
-        """
+
+        self.markValue = 0
+        while self.markValue <= 120:
+            self.markerLabel = QLabel(self)
+            if self.markValue == 0:
+                self.markerLabel.move(20, 780)
+            else:
+                self.markerLabel.move(20 + (self.markValue * 11), 780)
+            self.markerLabel.setText("|")
+            self.markerLabel.setStyleSheet("font: 15px; color: purple")
+            self.markValue += 5
+        
 
 
 
@@ -492,20 +519,43 @@ class Window(QWidget):
     # Prints the text entered in the textbox in the second window
     def printSubtitles(self):
         self.subtitleLabel = QLabel(self)
-        Model.subtitleList.append(self.entry.get()) 
+        Model.subtitleList.append(self.entry.get())
+        Model.subtitleButtonList.append(QPushButton(str(Model.subtitleList[len(Model.subtitleList) - 1]), self))
 
         self.subtitleDuration = int(self.subLength.get())
-        Model.buttonList[len(Model.subtitleList)-1].resize(24 + (self.subtitleDuration * 9),50)
-        Model.buttonList[len(Model.subtitleList)-1].setStyleSheet("border: 2px solid black")
+        Model.subtitleButtonList[len(Model.subtitleList) - 1].resize(24 + (self.subtitleDuration * 9),50)
+        Model.subtitleButtonList[len(Model.subtitleList) - 1].setStyleSheet("border: 2px solid black")
         
-        subPosition = int(self.text.get())
-        Model.buttonList[len(Model.subtitleList)-1].move(20+(subPosition)*11,790)
+        subPosition = int(self.timePosition.get())
+        print(str(len(Model.subtitleList) - 1))
+        Model.subtitleButtonList[len(Model.subtitleList) - 1].move(24+(subPosition)*11,790)
+        Model.subtitleButtonList[len(Model.subtitleList) - 1].show()
         
-
         #self.subtitleFile = open(r"bin/subtitles.srt", "a+")
         # Window
-        self.subtitleFile = open("subtitles.srt", "a+")
-        self.subtitleFile.write(self.entry.get() + "\n")
+        self.subtitleFile = open(r"bin\subtitles.srt", "a+")
+        subtitleIndex = 1
+        self.subtitleFile.write(str(Window.subtitleIndex) + "\n")
+        Window.subtitleIndex += 1
+        if subPosition < 10:
+            self.subtitleFile.write("00:00:0" + str(subPosition) + ",000 --> ")
+            if self.subtitleDuration + subPosition < 10:
+                self.subtitleFile.write("00:00:0" + str(self.subtitleDuration + subPosition) + ",000\n")
+            if self.subtitleDuration + subPosition >= 10 and self.subtitleDuration + subPosition < 100:
+                self.subtitleFile.write("00:00:" + str(self.subtitleDuration + subPosition) + ",000\n")
+        if subPosition >= 10 and subPosition <= 59:
+            self.subtitleFile.write("00:00:" + str(subPosition) + ",000 --> ")
+            if self.subtitleDuration + subPosition >= 60 and self.subtitleDuration + subPosition < 600:
+                minutes = int((self.subtitleDuration + subPosition) / 60)
+                seconds = (self.subtitleDuration + subPosition) % 60
+                if seconds < 10:
+                    self.subtitleFile.write("00:0" + str(minutes) + ":0" + str(seconds) + ",000\n")
+                else:
+                    self.subtitleFile.write("00:0" + str(minutes) + ":" + str(seconds) + ",000\n")
+            else:
+                self.subtitleFile.write("00:00:" + str(self.subtitleDuration + subPosition) + ",000\n")
+            
+        self.subtitleFile.write(self.entry.get() + ("\n" * 2))
         self.subtitleFile.close()
 
         self.destroySecondWindow()
