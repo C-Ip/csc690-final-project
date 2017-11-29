@@ -335,9 +335,9 @@ class Window(QWidget):
             
     # import function to get the urls needed to display in the mediaplayer widget
     def importFunction(self):
-        #Model.fname, _ = QFileDialog.getOpenFileName(self, 'Open file', '../desktop','All files(*.jpeg *.mp4 *.mov);;Image files(*.jpeg);;Video Files(*.mp4 *.mov)')
+        Model.fname, _ = QFileDialog.getOpenFileName(self, 'Open file', '../desktop','All files(*.jpeg *.mp4 *.mov);;Image files(*.jpeg);;Video Files(*.mp4 *.mov)')
         #windows
-        Model.fname, _ = QFileDialog.getOpenFileName(self, 'Open file', '..\desktop','All files(*.jpeg *.mp4 *.mov);;Image files(*.jpeg);;Video Files(*.mp4 *.mov)')
+        #Model.fname, _ = QFileDialog.getOpenFileName(self, 'Open file', '..\desktop','All files(*.jpeg *.mp4 *.mov);;Image files(*.jpeg);;Video Files(*.mp4 *.mov)')
         if Model.fname != '':
             Model.videoList.append(Model.fname)
             fi = QFileInfo(Model.fname)
@@ -423,6 +423,9 @@ class Window(QWidget):
             Model.importAudioList[i].setStyleSheet("border: 2px solid black")
         Model.importAudioList[i].setStyleSheet("border: 2px solid red")
 
+        self.moveAudio.setEnabled(True)
+        self.audioPosition.setEnabled(True)
+        self.moveAudio.setHidden(False)
 
 
     def timelinetoVid2(self):
