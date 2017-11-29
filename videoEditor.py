@@ -6,7 +6,7 @@ from PyQt5.QtMultimedia import QMediaContent,QMediaPlayer
 from PyQt5.QtMultimediaWidgets import QVideoWidget
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QCheckBox, QFileDialog, QLineEdit
 from PyQt5.QtGui import QPixmap, QImage, QMouseEvent
-from PyQt5.QtCore import Qt, QObject, pyqtSignal, QUrl, QFileInfo, QTime
+from PyQt5.QtCore import Qt, QObject, pyqtSignal, QUrl, QFileInfo, QTimer
 from model import Model
 from functools import partial
 from tkinter import Tk, Toplevel, Button, Entry, Label
@@ -263,9 +263,9 @@ class Window(QWidget):
         Model.buttonList[len(Model.buttonList)-1].show()
         
         #writes to a text file to create a list for the ffmpeg comman
-        self.file = open(r'bin/text.txt','w+')
+        #self.file = open(r'bin/text.txt','w+')
         #windows
-        #self.file = open(r'bin\text.txt','w+')
+        self.file = open(r'bin\text.txt','w+')
         self.file.write("file "+"'" + "%s'\n" %Model.videoList[Model.current])
         self.file.close()
 
@@ -281,9 +281,9 @@ class Window(QWidget):
         
         #windows
         #abpath = os.path.abspath(r'bin\output.mp4')
-        abpath = os.path.abspath(r'bin/output.mp4')
+        #abpath = os.path.abspath(r'bin/output.mp4')
 
-        self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(abpath)))
+        #self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(abpath)))
         self.playButton.setEnabled(True)
         self.update()
         
@@ -351,14 +351,6 @@ class Window(QWidget):
         #ffmpeg_subtitles = ["ffmpeg","-y","-i",r"bin/output.mp4","-i",r"bin/subtitles.srt","-c:v","libx264","-ar","44100","-ac","2","-ab","128k","-strict","-2","-c:s","mov_text","-map","0","-map","1",r"bin/outputfile.mp4"]
         s = subprocess.Popen(ffmpeg_subtitles,stdout=subprocess.PIPE)
         out1,err1 = s.communicate()
-
-        
-        #TODO//:: needs to move to another function, so ffmpegcommand is called first
-        #ffmpeg_subtitles = ["ffmpeg","-y","-i",r"bin\output.mp4","-i",r"bin\subtitles.srt","-c:v","libx264","-ar","44100","-ac","2","-ab","128k","-strict","-2","-c:s","mov_text","-map","0","-map","1",r"bin\outputfile.mp4"]
-        #ffmpeg_subtitles = ["ffmpeg","-y","-i",r"bin/output.mp4","-i",r"bin/subtitles.srt","-c:v","libx264","-ar","44100","-ac","2","-ab","128k","-strict","-2","-c:s","mov_text","-map","0","-map","1",r"bin/outputfile.mp4"]
-        #s = subprocess.Popen(ffmpeg_subtitles,stdout=subprocess.PIPE) #.call to fix waiting issue
-        #out1,err1 = s.communicate()
-
 
     def importAudioFunction(self):
         #Model.aname, _ = QFileDialog.getOpenFileName(self, 'Open audio file', '../desktop','All audio files(*.mp3 *.wav)')
@@ -568,19 +560,21 @@ class Window(QWidget):
         self.root.destroy()
 
     #deletes videolist file on exit
+    '''
     @atexit.register
     def goodbye():
-        file = open('bin/text.txt','w+')
+        #file = open('bin/text.txt','w+')
         #windows
-        #file = open('bin\text.txt','w+')
+        file = open('bin\text.txt','w+')
         file.truncate()
         #windows
-        #if os.path.isfile('bin\output.mp4'):
-            #os.remove('bin\output.mp4')
-        if os.path.isfile('bin/output.mp4'):
-            os.remove('bin/output.mp4')
+        if os.path.isfile('bin\output.mp4'):
+            os.remove('bin\output.mp4')
+        #if os.path.isfile('bin/output.mp4'):
+            #os.remove('bin/output.mp4')
         else:
             print("files clean!")
+    '''
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
