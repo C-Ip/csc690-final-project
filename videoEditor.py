@@ -226,12 +226,13 @@ class Window(QWidget):
         Model.audioThumbList[len(Model.audioThumbList)-1].move(20+(position)*11,720)
         print("audio")
     def createButton(self):
-        videoDuration = self.mediaPlayer.duration()
-        Model.videoListLength.append(videoDuration)
+        self.videoDuration = self.mediaPlayer.duration()
+        Model.videoListLength.append(self.videoDuration)
         Model.buttonList.append(QPushButton(str(Model.current+1),self))
-        position = int(self.positioningRequest.text())
+        self.position = int(self.positioningRequest.text())
+        Window.totalDuration += self.position * 1000
         
-        Model.positionarray.append(positionObject(position,len(Model.buttonList)-1))
+        Model.positionarray.append(positionObject(self.position,len(Model.buttonList)-1))
         sorted(Model.positionarray,key = attrgetter('timepos'),reverse = True)
         
         #print("Video duration: " + str(self.mediaPlayer.duration()))
@@ -243,12 +244,12 @@ class Window(QWidget):
             Model.buttonList[len(Model.videoList)-1].resize(24 + (vidSeconds * 9),130)
         
         """
-        vidSeconds = int(round((videoDuration/1000) % 60))
+        vidSeconds = int(round((self.videoDuration/1000) % 60))
         Model.buttonList[len(Model.buttonList)-1].resize(24 + (vidSeconds * 9),130)
         Model.buttonList[len(Model.buttonList)-1].setStyleSheet("border: 1px solid black")
         
         
-        Model.buttonList[len(Model.buttonList)-1].move(20+(position)*11,585)
+        Model.buttonList[len(Model.buttonList)-1].move(20+(self.position)*11,585)
         
         
         
@@ -311,7 +312,10 @@ class Window(QWidget):
                     self.playButton.setText("Play")
                     break
         '''
+        
         if self.timer.isActive():
+            # This needs to be outside of the play function
+            #self.timer.singleShot(self.position * 1000, self.mediaPlayer.play())
             if self.mediaPlayer.state() == QMediaPlayer.PlayingState:
                 self.mediaPlayer.pause()
                 self.playButton.setText("Play")
