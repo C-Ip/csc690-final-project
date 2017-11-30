@@ -361,23 +361,13 @@ class Window(QWidget):
         self.videoWidget.show()
     """
     def play(self):
-        '''
-        if self.mediaPlayer.state() != QMediaPlayer.PlayingState:
-            self.mediaPlayer.play()
-            self.playButton.setText("Pause")
-            while self.mediaPlayer.state() == QMediaPlayer.PlayingState:
-                Window.totalDuration -= 1
-                if Window.totalDuration == 60000:
-                    self.mediaPlayer.pause()
-                    self.playButton.setText("Play")
-                    break
-        '''
         #print(Model.positionarray[0].timepos)
-
+        #Model.videos[0].play()
+        #self.mediaPlayer.state() == QMediaPlayer.PlayingState:
         # Starts the timer at the last paused time instead of starting at the totalDuration each time.
-        print(Model.pausedTime)
+
+
         if Model.pausedTime == 0:
-            print("Hello")
             if self.timer.isActive() != True:
                 self.timer.start(Window.totalDuration)
                 self.mediaPlayer.play()
@@ -388,7 +378,6 @@ class Window(QWidget):
                 Model.pausedTime = self.timer.remainingTime()
                 self.timer.stop()
         else:
-            print("AUSD")
             if self.timer.isActive() != True:
                 self.timer.start(Model.pausedTime)
                 self.mediaPlayer.play()
@@ -398,7 +387,7 @@ class Window(QWidget):
                 self.playButton.setText("Play")
                 Model.pausedTime = self.timer.remainingTime()
                 self.timer.stop()
-        
+
     # import function to get the urls needed to display in the mediaplayer widget
     def importFunction(self):
         Model.fname, _ = QFileDialog.getOpenFileName(self, 'Open file', '../desktop','All files(*.jpeg *.mp4 *.mov);;Image files(*.jpeg);;Video Files(*.mp4 *.mov)')
@@ -411,6 +400,10 @@ class Window(QWidget):
             base = fi.completeBaseName()
             print(base)
             self.importBoxList(base)
+
+        #Model.videos.append(QMediaPlayer(self))
+        #Model.videos[len(Model.videos) - 1].setMedia(QMediaContent(QUrl.fromLocalFile(Model.videoList[len(Model.videoList) - 1])))
+        
         # this part changes the url into just the filename to be used in the import list
 
         #self.createButton()
