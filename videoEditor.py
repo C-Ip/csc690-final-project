@@ -42,6 +42,7 @@ class Window(QWidget):
         
         #video player creation, move to own definition later
         self.mediaPlayer = QMediaPlayer(self)
+        self.audioPlayer = QMediaPlayer(self)
         self.videoWidget = QVideoWidget(self)
         self.videoWidget.setGeometry(700,20,600,400)
         self.mediaPlayer.setVideoOutput(self.videoWidget)
@@ -285,10 +286,10 @@ class Window(QWidget):
         self.update()
     
     def moveAudioOnTime(self):
-        position = int(self.audioPosition.text())
+        self.soundPosition = int(self.audioPosition.text())
     
         currentAudioIndex = Model.currentAudioTimeIndex
-        Model.audioThumbList[currentAudioIndex].move(20+(position)*5.5,720)
+        Model.audioThumbList[currentAudioIndex].move(20+(self.soundPosition)*5.5,720)
         self.update
     
     
@@ -413,7 +414,7 @@ class Window(QWidget):
         if Model.pausedTime == 0:
             print("Hello")
             if self.timer.isActive() != True:
-                if Model.od[Model.tempIndex+1].timepos != 0 and Model.od[Model.tempIndex+1]:
+                if Model.tempIndex >= len(Model.od):
                     if ((Model.od[Model.tempIndex+1].timepos * 1000 )- Model.od[Model.tempIndex].duration) < 0:
                         Model.additionalduration = 0
                     Model.additionalduration = (Model.od[Model.tempIndex+1].timepos * 1000 )- Model.od[Model.tempIndex].duration
@@ -421,10 +422,12 @@ class Window(QWidget):
                     Model.additionalduration = 0
                 self.timer.start(Model.od[Model.tempIndex].duration + Model.additionalduration)
                 self.mediaPlayer.play()
+                self.audioPlayer.play()
                 self.timer.timeout.connect(self.playNext)
                 self.playButton.setText("Pause")
             else:
                 self.mediaPlayer.pause()
+                self.audioPlayer.pause()
                 self.playButton.setText("Play")
                 Model.pausedTime = self.timer.remainingTime()
                 self.timer.stop()
@@ -433,9 +436,11 @@ class Window(QWidget):
             if self.timer.isActive() != True:
                 self.timer.start(Model.pausedTime)
                 self.mediaPlayer.play()
+                self.audioPlayer.play()
                 self.playButton.setText("Pause")
             else:
                 self.mediaPlayer.pause()
+                self.audioPlayer.pause()
                 self.playButton.setText("Play")
                 Model.pausedTime = self.timer.remainingTime()
                 self.timer.stop()
