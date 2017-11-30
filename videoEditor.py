@@ -413,6 +413,8 @@ class Window(QWidget):
             print("Hello")
             if self.timer.isActive() != True:
                 if Model.od[Model.tempIndex+1].timepos != 0 and Model.od[Model.tempIndex+1]:
+                    if ((Model.od[Model.tempIndex+1].timepos * 1000 )- Model.od[Model.tempIndex].duration) < 0:
+                        Model.additionalduration = 0
                     Model.additionalduration = (Model.od[Model.tempIndex+1].timepos * 1000 )- Model.od[Model.tempIndex].duration
                 else:
                     Model.additionalduration = 0
