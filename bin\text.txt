@@ -1,5 +1,1 @@
-<<<<<<< HEAD
 file 'C:/Users/ipcal/Desktop/csc690-final-project/Naruto.mp4'
-=======
-file '/Users/jerrya/Desktop/termproject-csc690/csc690-final-project/demo.mov'
->>>>>>> f5446b93b431aefd20acb6df788cb3bbdaf2c0ee
