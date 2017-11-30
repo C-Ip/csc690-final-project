@@ -194,11 +194,12 @@ class Window(QWidget):
         self.importAudioButton.move(30,490)
         self.importAudioButton.clicked.connect(self.importAudioFunction)
         
-
+        '''
         # Change to fullscreen button
         self.fullScreenButton = QPushButton("Fullscreen", self)
         self.fullScreenButton.setStyleSheet("background-color: gray")
         self.fullScreenButton.move(1000, 380)
+        '''
         
         self.addSubtitleButton = QPushButton("Add Subtitles", self)
         self.addSubtitleButton.setStyleSheet("background-color: gray")
@@ -672,8 +673,15 @@ class Window(QWidget):
 
     # Prints the text entered in the textbox in the second window
     def printSubtitles(self):
+        Model.subList.append(QLabel(self))
+        Model.subList[len(Model.subList) - 1].setStyleSheet("border: 2px solid transparent")
+        Model.subList[len(Model.subList) - 1].setAlignment(Qt.AlignCenter)
+        Model.subList[len(Model.subList) - 1].setGeometry(740, 350, 500, 50)
+        
         self.subtitleLabel = QLabel(self)
         Model.subtitleList.append(self.entry.get())
+        Model.subList[len(Model.subList) - 1].setText(self.entry.get())
+        #Model.subList[len(Model.subList) - 1].setHidden(False)
         Model.subtitleButtonList.append(QPushButton(str(Model.subtitleList[len(Model.subtitleList) - 1]), self))
 
         self.subtitleDuration = int(self.subLength.get())
@@ -681,7 +689,6 @@ class Window(QWidget):
         Model.subtitleButtonList[len(Model.subtitleList) - 1].setStyleSheet("border: 2px solid black")
         
         subPosition = int(self.timePosition.get())
-        print(str(len(Model.subtitleList) - 1))
         Model.subtitleButtonList[len(Model.subtitleList) - 1].move(24+(subPosition)*11,790)
         Model.subtitleButtonList[len(Model.subtitleList) - 1].show()
         

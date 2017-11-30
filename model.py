@@ -22,6 +22,7 @@ class Model(QWidget):
     adioCurrent = 0
     currentTimeVid = 1
     subtitleList = []
+    subList = []
     subtitleButtonList = []
     positionarray = []
     importAudioList = []
