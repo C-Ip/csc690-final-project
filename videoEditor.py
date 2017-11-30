@@ -52,15 +52,15 @@ class Window(QWidget):
         self.setGeometry(100, 50, 1700, 900)
     
     def paintEvent(self,event):
-        qp = QPainter()
-        qp.begin(self)
+        self.qp = QPainter()
+        self.qp.begin(self)
         
-        self.drawTimeIndicator(qp)
-        qp.end()
+        self.drawTimeIndicator(self.qp)
+        self.qp.end()
     
     def drawTimeIndicator(self,qp):
-        pen = QPen(Qt.green,2,Qt.SolidLine)
-        qp.setPen(pen)
+        self.pen = QPen(Qt.green,2,Qt.SolidLine)
+        qp.setPen(self.pen)
         qp.drawLine(20,585,20,840)
     
     #creates the box for the import list, default box
@@ -410,8 +410,20 @@ class Window(QWidget):
                 self.playButton.setText("Play")
                 Model.pausedTime = self.timer.remainingTime()
                 self.timer.stop()
-
-
+                    #######################
+        self.newtimer =QTimer(self)
+        self.newtimer.start(1000)
+        self.newtimer.timeout.connect(self.moveIndicator)
+        
+        ################
+    def moveIndicator(self):
+        temptime = 0
+        time = 0
+        temptime = self.newtimer.remainingTime()
+        time += temptime
+        self.qp.drawLine(20+time,585,20+time,840)
+        self.repaint()
+        print(str(self.newtimer.remainingTime()))
 
     def playNext(self):
         self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(Model.videoList[1])))
