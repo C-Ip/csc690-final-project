@@ -6,7 +6,7 @@ from operator import itemgetter,attrgetter
 from PyQt5.QtMultimedia import QMediaContent,QMediaPlayer
 from PyQt5.QtMultimediaWidgets import QVideoWidget
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QCheckBox, QFileDialog, QLineEdit,QSlider
-from PyQt5.QtGui import QPixmap, QImage, QMouseEvent
+from PyQt5.QtGui import QPixmap, QImage, QMouseEvent, QPainter,QColor,QPen
 from PyQt5.QtCore import Qt, QObject, pyqtSignal, QUrl, QFileInfo, QTimer
 from model import Model
 from functools import partial
@@ -51,6 +51,17 @@ class Window(QWidget):
         self.setWindowTitle(self.title)
         self.setGeometry(100, 50, 1700, 900)
     
+    def paintEvent(self,event):
+        self.qp = QPainter()
+        self.qp.begin(self)
+        
+        self.drawTimeIndicator(self.qp)
+        self.qp.end()
+    
+    def drawTimeIndicator(self,qp):
+        self.pen = QPen(Qt.green,2,Qt.SolidLine)
+        qp.setPen(self.pen)
+        qp.drawLine(20,585,20,840)
     
     #creates the box for the import list, default box
     def importBox(self):
@@ -398,8 +409,20 @@ class Window(QWidget):
                 self.playButton.setText("Play")
                 Model.pausedTime = self.timer.remainingTime()
                 self.timer.stop()
-
-
+                    #######################
+        self.newtimer =QTimer(self)
+        self.newtimer.start(1000)
+        self.newtimer.timeout.connect(self.moveIndicator)
+        
+        ################
+    def moveIndicator(self):
+        temptime = 0
+        time = 0
+        temptime = self.newtimer.remainingTime()
+        time += temptime
+        self.qp.drawLine(20+time,585,20+time,840)
+        self.repaint()
+        print(str(self.newtimer.remainingTime()))
 
     def playNext(self):
         self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(Model.videoList[1])))
