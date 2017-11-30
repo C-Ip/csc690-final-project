@@ -6,7 +6,7 @@ from operator import itemgetter,attrgetter
 from PyQt5.QtMultimedia import QMediaContent,QMediaPlayer
 from PyQt5.QtMultimediaWidgets import QVideoWidget
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QCheckBox, QFileDialog, QLineEdit,QSlider
-from PyQt5.QtGui import QPixmap, QImage, QMouseEvent
+from PyQt5.QtGui import QPixmap, QImage, QMouseEvent, QPainter,QColor,QPen
 from PyQt5.QtCore import Qt, QObject, pyqtSignal, QUrl, QFileInfo, QTimer
 from model import Model
 from functools import partial
@@ -51,6 +51,17 @@ class Window(QWidget):
         self.setWindowTitle(self.title)
         self.setGeometry(100, 50, 1700, 900)
     
+    def paintEvent(self,event):
+        qp = QPainter()
+        qp.begin(self)
+        
+        self.drawTimeIndicator(qp)
+        qp.end()
+    
+    def drawTimeIndicator(self,qp):
+        pen = QPen(Qt.green,2,Qt.SolidLine)
+        qp.setPen(pen)
+        qp.drawLine(20,585,20,840)
     
     #creates the box for the import list, default box
     def importBox(self):
