@@ -1,1 +1,1 @@
-file 'C:/Users/ipcal/Desktop/csc690-final-project/demo.mov'
+file '/Users/jerrya/Desktop/termproject-csc690/csc690-final-project/demo.mov'
