@@ -281,6 +281,7 @@ class Window(QWidget):
     
         currentIndex =  Model.currentVidTimeLineIndex
         Model.buttonList[currentIndex].move(20+(position)*5.5,585)
+        Model.positionarray[currentIndex].timepos = position
         self.update()
     
     def moveAudioOnTime(self):
