@@ -1,1 +1,1 @@
-file '/Users/jerrya/Desktop/termproject-csc690/csc690-final-project/friend.mp4'
+file '/Users/jerrya/Desktop/termproject-csc690/csc690-final-project/demo.mov'

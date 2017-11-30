@@ -257,6 +257,7 @@ class Window(QWidget):
         if self.mediaStateChanged.state() == QMediaPlayer.PlayingState:
             self.playButton.setIcon
     """
+    
     def positionChanged(self,position):
         self.positionSlider.setValue(position)
     
@@ -295,6 +296,7 @@ class Window(QWidget):
         Model.audioThumbList[len(Model.audioThumbList)-1].show()
         Model.audioThumbList[len(Model.audioThumbList)-1].clicked.connect(partial(self.audioTimeLineClicked,len(Model.audioThumbList)-1))
         self.update()
+        self.moveAudio.setEnabled(False)
         #print(str(self.audioSeconds))
     def createButton(self):
         Model.videoDuration = self.mediaPlayer.duration()
@@ -303,7 +305,7 @@ class Window(QWidget):
         self.position = int(self.positioningRequest.text())
         Window.totalDuration += self.position * 1000
         
-        Model.positionarray.append(positionObject(self.position,len(Model.buttonList)-1,Model.videoDuration))
+        Model.positionarray.append(positionObject(self.position,Model.current,Model.videoDuration))
         Model.od = sorted(Model.positionarray,key=lambda x: x.timepos)
         
         print(Model.od)
@@ -359,6 +361,7 @@ class Window(QWidget):
         #abpath = os.path.abspath(r'bin/output.mp4')
 
         #self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(abpath)))
+        self.moveButton.setEnabled(False)
         self.playButton.setEnabled(True)
         self.update()
         
@@ -395,9 +398,10 @@ class Window(QWidget):
         if Model.pausedTime == 0:
             print("Hello")
             if self.timer.isActive() != True:
-                if Model.od[Model.tempIndex+1].timepos != 0:
+                if Model.od[Model.tempIndex+1].timepos != 0 and Model.od[Model.tempIndex+1]:
                     Model.additionalduration = (Model.od[Model.tempIndex+1].timepos * 1000 )- Model.od[Model.tempIndex].duration
-                    print("working")
+                else:
+                    Model.additionalduration = 0
                 self.timer.start(Model.od[Model.tempIndex].duration + Model.additionalduration)
                 self.mediaPlayer.play()
                 self.timer.timeout.connect(self.playNext)
@@ -437,10 +441,13 @@ class Window(QWidget):
         #if (len(Model.od)> 1) and (Model.tempIndex <= len(Model.od)):
         Model.tempIndex += 1
         print(str(Model.tempIndex))
-        self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(Model.videoList[Model.od[Model.tempIndex].index])))
-        self.mediaPlayer.play()
 
-    
+        if Model.od[Model.tempIndex] and Model.tempIndex < len(Model.od):
+            self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(Model.videoList[Model.od[Model.tempIndex].index])))
+            self.mediaPlayer.play()
+        else:
+            print("video done")
+
     
     # import function to get the urls needed to display in the mediaplayer widget
     def importFunction(self):
@@ -485,6 +492,7 @@ class Window(QWidget):
         self.hideImportButtons()
         self.moveAuOn.setEnabled(True)
         self.moveAuOn.setHidden(False)
+        self.enabelSlider
     
     
 
@@ -508,9 +516,9 @@ class Window(QWidget):
         
         
         self.playButton.setEnabled(True)
-        
         self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(Model.videoList[Model.od[Model.tempIndex].index])))
         #self.mediaPlayer.play()
+        self.enabelSlider()
         
         """
         if len(Model.positionarray) == 1:
@@ -556,7 +564,8 @@ class Window(QWidget):
         self.positioningRequest.setEnabled(True)
         self.positionSlider.setEnabled(True)
         Model.current = index
-    
+        self.enableMove()
+        self.positionSlider.setEnabled(True)
         
 
     def importAudioClicked(self,index):
@@ -576,6 +585,8 @@ class Window(QWidget):
         self.audioPosition.setEnabled(True)
         self.moveAudio.setHidden(False)
         Model.audioCurrent = index
+        self.enableAudio()
+        self.positionSlider.setEnabled(True)
     
 
 
@@ -736,7 +747,16 @@ class Window(QWidget):
         self.moveAuOn.setHidden(True)
         self.moveAuOn.setEnabled(False)
     
-
+    def enableMove(self):
+        self.moveButton.setEnabled(True)
+    
+    def enableAudio(self):
+        self.moveAudio.setEnabled(True)
+    
+    
+    def enabelSlider(self):
+        self.positionSlider.setEnabled(True)
+    
     # Destroys the second window
     def destroySecondWindow(self):
         self.root.destroy()
