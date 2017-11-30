@@ -462,13 +462,12 @@ class Window(QWidget):
     def playNext(self):
         #if (len(Model.od)> 1) and (Model.tempIndex <= len(Model.od)):
         Model.tempIndex += 1
-        print(str(Model.tempIndex))
-
-        if Model.od[Model.tempIndex] and Model.tempIndex < len(Model.od):
+        if Model.tempIndex < len(Model.od):
             self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(Model.videoList[Model.od[Model.tempIndex].index])))
             self.mediaPlayer.play()
         else:
             print("video done")
+            self.timer.stop()
 
     
     # import function to get the urls needed to display in the mediaplayer widget
