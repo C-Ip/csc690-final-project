@@ -6,7 +6,7 @@ from operator import itemgetter,attrgetter
 from PyQt5.QtMultimedia import QMediaContent,QMediaPlayer
 from PyQt5.QtMultimediaWidgets import QVideoWidget
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QCheckBox, QFileDialog, QLineEdit,QSlider
-from PyQt5.QtGui import QPixmap, QImage, QMouseEvent, QPainter,QColor,QPen
+from PyQt5.QtGui import QPixmap, QImage, QMouseEvent, QPainter, QColor, QPen
 from PyQt5.QtCore import Qt, QObject, pyqtSignal, QUrl, QFileInfo, QTimer
 from model import Model
 from functools import partial
@@ -15,8 +15,11 @@ from positionObject import positionObject
 
 
 class Window(QWidget):
+    temptime = 0
+    time = 0
     totalDuration = 0
     subtitleIndex = 1
+    qp = QPainter()
     
     def __init__(self):
         super().__init__()
@@ -35,6 +38,7 @@ class Window(QWidget):
         #self.createLabel()
 
         self.timer = QTimer(self)
+        self.newtimer = QTimer(self)
         
         #video player creation, move to own definition later
         self.mediaPlayer = QMediaPlayer(self)
@@ -52,17 +56,21 @@ class Window(QWidget):
         self.setGeometry(100, 50, 1700, 900)
     
     def paintEvent(self,event):
-        self.qp = QPainter()
-        self.qp.begin(self)
-        
-        self.drawTimeIndicator(self.qp)
-        self.qp.end()
+        Window.qp.begin(self)
+        self.pen = QPen(Qt.green,5,Qt.SolidLine)
+        Window.qp.setPen(self.pen)
+        self.drawTimeIndicator(Window.qp)
+        Window.qp.end()
     
     def drawTimeIndicator(self,qp):
-        self.pen = QPen(Qt.green,2,Qt.SolidLine)
-        qp.setPen(self.pen)
-        qp.drawLine(20,585,20,840)
-    
+        if self.totalDuration > 0:
+            qp.fillRect(20,585,2,255, Qt.transparent)
+        else:
+            qp.drawRect(20,585,2,255)
+        while self.mediaPlayer.state == QMediaPlayer.PlayingState:
+            Window.time += 10
+            qp.drawRect(20 * Window.time, 585, 2, 255)
+            #qp.fillRect(20 * Window.time - 1, 585, 2, 255)
     #creates the box for the import list, default box
     def importBox(self):
         self.importBoxLabel = QLabel(self)
@@ -286,7 +294,6 @@ class Window(QWidget):
         Model.audioThumbList.append(QPushButton(str(Model.audioCurrent+1),self))
         position = int(self.audioPosition.text())
         self.audioDuration= self.mediaPlayer.duration()
-        print(str(self.audioDuration))
         #Added minutes
         self.audioSeconds = int(round((self.audioDuration/1000)))
         Model.audioThumbList[len(Model.audioThumbList)-1].resize((self.audioSeconds * 5.5),60)
@@ -295,7 +302,7 @@ class Window(QWidget):
         Model.audioThumbList[len(Model.audioThumbList)-1].show()
         Model.audioThumbList[len(Model.audioThumbList)-1].clicked.connect(partial(self.audioTimeLineClicked,len(Model.audioThumbList)-1))
         self.update()
-        print(str(self.audioSeconds))
+
     def createButton(self):
         self.videoDuration = self.mediaPlayer.duration()
         Model.videoListLength.append(self.videoDuration)
@@ -383,6 +390,7 @@ class Window(QWidget):
                     self.playButton.setText("Play")
                     break
         '''
+
         #print(Model.positionarray[0].timepos)
 
         # Starts the timer at the last paused time instead of starting at the totalDuration each time.
@@ -409,20 +417,17 @@ class Window(QWidget):
                 self.playButton.setText("Play")
                 Model.pausedTime = self.timer.remainingTime()
                 self.timer.stop()
-                    #######################
-        self.newtimer =QTimer(self)
-        self.newtimer.start(1000)
+                
+        self.newtimer.start(1)
         self.newtimer.timeout.connect(self.moveIndicator)
         
-        ################
+
     def moveIndicator(self):
-        temptime = 0
-        time = 0
-        temptime = self.newtimer.remainingTime()
-        time += temptime
-        self.qp.drawLine(20+time,585,20+time,840)
-        self.repaint()
-        print(str(self.newtimer.remainingTime()))
+        Window.temptime = self.newtimer.remainingTime()
+  
+        Window.qp.drawLine(20 + Window.temptime,585,20 + Window.temptime,840)
+        #self.repaint()
+
 
     def playNext(self):
         self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(Model.videoList[1])))
