@@ -33,3 +33,8 @@ class Model(QWidget):
     currentAudioTimeIndex = 0
     timelineState = False
     videos = []
+    tempIndex = 0
+    od = []
+    durationlist = []
+    videoDuration = 0
+    additionalduration = 0
