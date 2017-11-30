@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-import sys, os, subprocess, atexit
+import sys, os, subprocess, atexit, operator
 from pygame import mixer
 from PyQt5 import QtCore
 from operator import itemgetter,attrgetter
@@ -286,7 +286,7 @@ class Window(QWidget):
         Model.audioThumbList.append(QPushButton(str(Model.audioCurrent+1),self))
         position = int(self.audioPosition.text())
         self.audioDuration= self.mediaPlayer.duration()
-        print(str(self.audioDuration))
+        #print(str(self.audioDuration))
         #Added minutes
         self.audioSeconds = int(round((self.audioDuration/1000)))
         Model.audioThumbList[len(Model.audioThumbList)-1].resize((self.audioSeconds * 5.5),60)
@@ -295,16 +295,19 @@ class Window(QWidget):
         Model.audioThumbList[len(Model.audioThumbList)-1].show()
         Model.audioThumbList[len(Model.audioThumbList)-1].clicked.connect(partial(self.audioTimeLineClicked,len(Model.audioThumbList)-1))
         self.update()
-        print(str(self.audioSeconds))
+        #print(str(self.audioSeconds))
     def createButton(self):
-        self.videoDuration = self.mediaPlayer.duration()
-        Model.videoListLength.append(self.videoDuration)
+        Model.videoDuration = self.mediaPlayer.duration()
+        #Model.videoListLength.append(self.videoDuration)
         Model.buttonList.append(QPushButton(str(Model.current+1),self))
         self.position = int(self.positioningRequest.text())
         Window.totalDuration += self.position * 1000
         
-        Model.positionarray.append(positionObject(self.position,len(Model.buttonList)-1))
-        sorted(Model.positionarray,key = attrgetter('timepos'),reverse = True)
+        Model.positionarray.append(positionObject(self.position,len(Model.buttonList)-1,Model.videoDuration))
+        Model.od = sorted(Model.positionarray,key=lambda x: x.timepos)
+        
+        print(Model.od)
+        #print(Model.od[0].index)
         
         #print("Video duration: " + str(self.mediaPlayer.duration()))
 
@@ -315,7 +318,7 @@ class Window(QWidget):
             Model.buttonList[len(Model.videoList)-1].resize(24 + (vidSeconds * 9),130)
         
         """
-        vidSeconds = int(round((self.videoDuration/1000) % 60))
+        vidSeconds = int(round((Model.videoDuration/1000) % 60))
         Model.buttonList[len(Model.buttonList)-1].resize((vidSeconds * 5.5),130)
         Model.buttonList[len(Model.buttonList)-1].setStyleSheet("border: 1px solid black; background:blue; color:red")
         
@@ -386,10 +389,16 @@ class Window(QWidget):
         #print(Model.positionarray[0].timepos)
 
         # Starts the timer at the last paused time instead of starting at the totalDuration each time.
+        
+        
+        
         if Model.pausedTime == 0:
             print("Hello")
             if self.timer.isActive() != True:
-                self.timer.start(Window.totalDuration)
+                if Model.od[Model.tempIndex+1].timepos != 0:
+                    Model.additionalduration = (Model.od[Model.tempIndex+1].timepos * 1000 )- Model.od[Model.tempIndex].duration
+                    print("working")
+                self.timer.start(Model.od[Model.tempIndex].duration + Model.additionalduration)
                 self.mediaPlayer.play()
                 self.timer.timeout.connect(self.playNext)
                 self.playButton.setText("Pause")
@@ -422,11 +431,16 @@ class Window(QWidget):
         time += temptime
         self.qp.drawLine(20+time,585,20+time,840)
         self.repaint()
-        print(str(self.newtimer.remainingTime()))
+        #print(str(self.newtimer.remainingTime()))
 
     def playNext(self):
-        self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(Model.videoList[1])))
+        #if (len(Model.od)> 1) and (Model.tempIndex <= len(Model.od)):
+        Model.tempIndex += 1
+        print(str(Model.tempIndex))
+        self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(Model.videoList[Model.od[Model.tempIndex].index])))
         self.mediaPlayer.play()
+
+    
     
     # import function to get the urls needed to display in the mediaplayer widget
     def importFunction(self):
@@ -435,10 +449,10 @@ class Window(QWidget):
         #Model.fname, _ = QFileDialog.getOpenFileName(self, 'Open file', '..\desktop','All files(*.jpeg *.mp4 *.mov);;Image files(*.jpeg);;Video Files(*.mp4 *.mov)')
         if Model.fname != '':
             Model.videoList.append(Model.fname)
-            print(Model.videoList)
+            # print(Model.videoList)
             fi = QFileInfo(Model.fname)
             base = fi.completeBaseName()
-            print(base)
+            #print(base)
             self.importBoxList(base)
         # this part changes the url into just the filename to be used in the import list
 
@@ -482,7 +496,7 @@ class Window(QWidget):
         
         #highlighting
         Model.timelineState = True
-        print(str(Model.timelineState))
+        #print(str(Model.timelineState))
         self.cleanImportLists()
         self.cleanTimeline()
         Model.buttonList[index].setStyleSheet("border: 2px solid red; background:blue;color:red")
@@ -494,7 +508,8 @@ class Window(QWidget):
         
         
         self.playButton.setEnabled(True)
-        self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(Model.videoList[0])))
+        
+        self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(Model.videoList[Model.od[Model.tempIndex].index])))
         #self.mediaPlayer.play()
         
         """
