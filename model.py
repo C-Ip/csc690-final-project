@@ -38,3 +38,4 @@ class Model(QWidget):
     durationlist = []
     videoDuration = 0
     additionalduration = 0
+    temp = 0

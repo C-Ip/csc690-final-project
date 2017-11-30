@@ -411,18 +411,59 @@ class Window(QWidget):
         
         
         if Model.pausedTime == 0:
+            """
             print("Hello")
             if self.timer.isActive() != True:
-                if Model.od[Model.tempIndex+1].timepos != 0 and Model.od[Model.tempIndex+1]:
-                    if ((Model.od[Model.tempIndex+1].timepos * 1000 )- Model.od[Model.tempIndex].duration) < 0:
-                        Model.additionalduration = 0
-                    Model.additionalduration = (Model.od[Model.tempIndex+1].timepos * 1000 )- Model.od[Model.tempIndex].duration
-                else:
+                if Model.tempIndex == len(Model.od):
+                    Model.tempIndex = 0
+                if Model.od[Model.tempIndex].timepos != 0:
+                    Model.temp = Model.od[Model.tempIndex].timepos*1000
+                    if Model.tempIndex > 1:
+                        if ((Model.od[Model.tempIndex].timepos * 1000 )- Model.od[Model.tempIndex-1].duration) < 0:
+                            Model.additionalduration = 0
+                        Model.additionalduration = (Model.od[Model.tempIndex].timepos * 1000 )- Model.od[Model.tempIndex-1].duration
+                elif Model.od[Model.tempIndex].timepos == 0:
+                    Model.temp = 0
                     Model.additionalduration = 0
-                self.timer.start(Model.od[Model.tempIndex].duration + Model.additionalduration)
+                self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(r"black.mp4")))
+                self.timer.start(Model.temp + Model.additionalduration)
                 self.mediaPlayer.play()
                 self.timer.timeout.connect(self.playNext)
                 self.playButton.setText("Pause")
+            else:
+                self.mediaPlayer.pause()
+                self.playButton.setText("Play")
+                Model.pausedTime = self.timer.remainingTime()
+                self.timer.stop()
+            """
+            if self.timer.isActive() != True:
+                if Model.timelineState == True:
+                    if Model.tempIndex == len(Model.od):
+                        Model.tempIndex = 0
+                    print(str(Model.tempIndex))
+                    if Model.od[Model.tempIndex].timepos != 0:
+                        Model.temp = Model.od[Model.tempIndex].timepos*1000
+                        if Model.tempIndex > 1:
+                            if ((Model.od[Model.tempIndex].timepos * 1000 )- Model.od[Model.tempIndex-1].duration) < 0:
+                                Model.additionalduration = 0
+                            else:
+                                Model.additionalduration = (Model.od[Model.tempIndex].timepos * 1000 )- Model.od[Model.tempIndex-1].duration
+                                print(str(Model.additionalduration))
+                            Model.temp = Model.od[Model.tempIndex-1].duration
+                    if Model.od[Model.tempIndex].timepos !=0 and Model.tempIndex == 0:
+                        self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(r"black.mp4")))
+                    if Model.od[Model.tempIndex].timepos == 0 and Model.tempIndex ==0:
+                        Model.temp = Model.od[Model.tempIndex].duration
+                        Model.additionalduration =0
+                
+                if Model.timelineState == False:
+                    Model.temp = 0
+                    Model.additionalduration =0
+                self.timer.start(Model.temp + Model.additionalduration)
+                self.mediaPlayer.play()
+                self.timer.timeout.connect(self.playNext)
+                self.playButton.setText("Pause")
+
             else:
                 self.mediaPlayer.pause()
                 self.playButton.setText("Play")
@@ -461,13 +502,14 @@ class Window(QWidget):
 
     def playNext(self):
         #if (len(Model.od)> 1) and (Model.tempIndex <= len(Model.od)):
-        Model.tempIndex += 1
         if Model.tempIndex < len(Model.od):
             self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(Model.videoList[Model.od[Model.tempIndex].index])))
             self.mediaPlayer.play()
-        else:
-            print("video done")
-            self.timer.stop()
+            #print("help")
+            #print(str(Model.tempIndex))
+            self.playButton.setText("Pause")
+            Model.tempIndex += 1
+
 
     
     # import function to get the urls needed to display in the mediaplayer widget
@@ -513,7 +555,9 @@ class Window(QWidget):
         self.hideImportButtons()
         self.moveAuOn.setEnabled(True)
         self.moveAuOn.setHidden(False)
-        self.enabelSlider
+        self.positionSlider.setEnabled(False)
+        self.positionSlider.setHidden(True)
+    
     
     
 
@@ -537,9 +581,9 @@ class Window(QWidget):
         
         
         self.playButton.setEnabled(True)
-        self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(Model.videoList[Model.od[Model.tempIndex].index])))
+        self.positionSlider.setEnabled(False)
+        self.positionSlider.setHidden(True)
         #self.mediaPlayer.play()
-        self.enabelSlider()
         
         """
         if len(Model.positionarray) == 1:
@@ -587,7 +631,7 @@ class Window(QWidget):
         Model.current = index
         self.enableMove()
         self.positionSlider.setEnabled(True)
-        
+        self.positionSlider.setHidden(False)
 
     def importAudioClicked(self,index):
         Model.timelineState = False
@@ -608,6 +652,7 @@ class Window(QWidget):
         Model.audioCurrent = index
         self.enableAudio()
         self.positionSlider.setEnabled(True)
+        self.positionSlider.setHidden(False)
     
 
 
