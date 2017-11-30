@@ -381,6 +381,7 @@ class Window(QWidget):
             if self.timer.isActive() != True:
                 self.timer.start(Window.totalDuration)
                 self.mediaPlayer.play()
+                self.timer.timeout.connect(self.playNext)
                 self.playButton.setText("Pause")
             else:
                 self.mediaPlayer.pause()
@@ -398,7 +399,13 @@ class Window(QWidget):
                 self.playButton.setText("Play")
                 Model.pausedTime = self.timer.remainingTime()
                 self.timer.stop()
-        
+
+
+
+    def playNext(self):
+        self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(Model.videoList[1])))
+        self.mediaPlayer.play()
+    
     # import function to get the urls needed to display in the mediaplayer widget
     def importFunction(self):
         Model.fname, _ = QFileDialog.getOpenFileName(self, 'Open file', '../desktop','All files(*.jpeg *.mp4 *.mov);;Image files(*.jpeg);;Video Files(*.mp4 *.mov)')
@@ -462,6 +469,11 @@ class Window(QWidget):
         self.hideTimeButtons()
         self.moveOn.setEnabled(True)
         self.moveOn.setHidden(False)
+        
+        
+        self.playButton.setEnabled(True)
+        self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(Model.videoList[0])))
+        #self.mediaPlayer.play()
         
         """
         if len(Model.positionarray) == 1:
