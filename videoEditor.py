@@ -1,11 +1,12 @@
 #!/usr/bin/python3
-import sys, os, subprocess, atexit
+import sys, os, subprocess, atexit, operator
+from pygame import mixer
 from PyQt5 import QtCore
 from operator import itemgetter,attrgetter
 from PyQt5.QtMultimedia import QMediaContent,QMediaPlayer
 from PyQt5.QtMultimediaWidgets import QVideoWidget
-from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QCheckBox, QFileDialog, QLineEdit
-from PyQt5.QtGui import QPixmap, QImage, QMouseEvent
+from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QCheckBox, QFileDialog, QLineEdit,QSlider
+from PyQt5.QtGui import QPixmap, QImage, QMouseEvent, QPainter, QColor, QPen
 from PyQt5.QtCore import Qt, QObject, pyqtSignal, QUrl, QFileInfo, QTimer
 from model import Model
 from functools import partial
@@ -14,13 +15,17 @@ from positionObject import positionObject
 
 
 class Window(QWidget):
+    temptime = 0
+    time = 0
     totalDuration = 0
     subtitleIndex = 1
+    qp = QPainter()
     
     def __init__(self):
         super().__init__()
         self.title = "Video Editor"
-        
+        mixer.pre_init(44100,-16,2,4096)
+        mixer.init()
         
         self.display()
         self.initUI()
@@ -33,6 +38,7 @@ class Window(QWidget):
         #self.createLabel()
 
         self.timer = QTimer(self)
+        self.newtimer = QTimer(self)
         
         #video player creation, move to own definition later
         self.mediaPlayer = QMediaPlayer(self)
@@ -40,6 +46,8 @@ class Window(QWidget):
         self.videoWidget.setGeometry(700,20,600,400)
         self.mediaPlayer.setVideoOutput(self.videoWidget)
         self.mediaPlayer.durationChanged.connect(self.durationChanged)
+        #self.mediaPlayer.stateChanged.connect(self.mediaStateChanged)
+        self.mediaPlayer.positionChanged.connect(self.positionChanged)
         self.videoWidget.setAspectRatioMode(Qt.KeepAspectRatio)
         self.show()
 
@@ -47,7 +55,22 @@ class Window(QWidget):
         self.setWindowTitle(self.title)
         self.setGeometry(100, 50, 1700, 900)
     
+    def paintEvent(self,event):
+        Window.qp.begin(self)
+        self.pen = QPen(Qt.green,5,Qt.SolidLine)
+        Window.qp.setPen(self.pen)
+        self.drawTimeIndicator(Window.qp)
+        Window.qp.end()
     
+    def drawTimeIndicator(self,qp):
+        if self.totalDuration > 0:
+            qp.fillRect(20,585,2,255, Qt.transparent)
+        else:
+            qp.drawRect(20,585,2,255)
+        while self.mediaPlayer.state == QMediaPlayer.PlayingState:
+            Window.time += 10
+            qp.drawRect(20 * Window.time, 585, 2, 255)
+            #qp.fillRect(20 * Window.time - 1, 585, 2, 255)
     #creates the box for the import list, default box
     def importBox(self):
         self.importBoxLabel = QLabel(self)
@@ -103,14 +126,21 @@ class Window(QWidget):
         
         self.timeLineLabel = QLabel(self)
         self.timeLineLabel.setStyleSheet("border: 2px solid black")
-        self.timeLineLabel.setGeometry(20, 625, 1400, 130)
+        self.timeLineLabel.setGeometry(20, 585, 1400, 130)
 
         # Timeline for subtitles
         self.subTimeLineLabel = QLabel(self)
         self.subTimeLineLabel.setStyleSheet("border: 2px solid black")
-        self.subTimeLineLabel.setGeometry(20, 770, 1400, 80)
+        self.subTimeLineLabel.setGeometry(20, 790, 1400, 50)
+    
+        # timeline audio
+        self.audioTimeLine = QLabel(self)
+        self.audioTimeLine.setStyleSheet("border: 2px solid black")
+        self.audioTimeLine.setGeometry(20,720,1400,60)
 
     def durationChanged(self, duration):
+        self.positionSlider.setRange(0,duration)
+        
         if Window.totalDuration == 0:
             self.playTimeLabel = QLabel(self)
         Window.totalDuration += duration
@@ -129,8 +159,8 @@ class Window(QWidget):
         else:
         '''
         self.playTimeLabel.setText(str(self.hours) + ":" + str(self.minutes) + ":" + str(self.seconds))
-        self.playTimeLabel.setStyleSheet("font-size: 40px")
-        self.playTimeLabel.move(650, 550)
+        self.playTimeLabel.setStyleSheet("font-size: 40px; alignment:center-align")
+        self.playTimeLabel.move(450, 500)
         self.playTimeLabel.show()
         #self.createButton()
         
@@ -164,11 +194,12 @@ class Window(QWidget):
         self.importAudioButton.move(30,490)
         self.importAudioButton.clicked.connect(self.importAudioFunction)
         
-
+        '''
         # Change to fullscreen button
-        #self.fullScreenButton = QPushButton("Fullscreen", self)
-        #self.fullScreenButton.setStyleSheet("background-color: gray")
-        #self.fullScreenButton.move(1000, 380)
+        self.fullScreenButton = QPushButton("Fullscreen", self)
+        self.fullScreenButton.setStyleSheet("background-color: gray")
+        self.fullScreenButton.move(1000, 380)
+        '''
         
         self.addSubtitleButton = QPushButton("Add Subtitles", self)
         self.addSubtitleButton.setStyleSheet("background-color: gray")
@@ -176,7 +207,7 @@ class Window(QWidget):
         self.addSubtitleButton.clicked.connect(self.addSubtitles)
 
         # Move to timeline button
-        self.moveButton = QPushButton("Move Video", self)
+        self.moveButton = QPushButton("Video to Timeline", self)
         self.moveButton.setStyleSheet("background-color: gray")
         self.moveButton.move(300, 460)
         self.moveButton.clicked.connect(self.createButton)
@@ -184,12 +215,27 @@ class Window(QWidget):
         self.moveButton.setHidden(True)
         
         #move audio to timeline
-        self.moveAudio = QPushButton("Move Audio",self)
+        self.moveAudio = QPushButton("Audio to Timeline",self)
         self.moveAudio.setStyleSheet("background-color:gray")
         self.moveAudio.move(300,490)
-        #self.moveAudio.clicked.connect(self.createAudioThumbs)
+        self.moveAudio.clicked.connect(self.createAudioThumbs)
         self.moveAudio.setEnabled(False)
         self.moveAudio.setHidden(True)
+        
+        
+        self.moveOn = QPushButton("Move video",self)
+        self.moveOn.setStyleSheet("background-color:gray")
+        self.moveOn.move(300, 460)
+        self.moveOn.clicked.connect(self.moveOnTimeline)
+        self.moveOn.setEnabled(False)
+        self.moveOn.setHidden(True)
+        
+        self.moveAuOn = QPushButton("Move audio",self)
+        self.moveAuOn.setStyleSheet("background-color:gray")
+        self.moveAuOn.move(300,490)
+        self.moveAuOn.clicked.connect(self.moveAudioOnTime)
+        self.moveAuOn.setEnabled(False)
+        self.moveAuOn.setHidden(True)
         
     
         #qlineedit
@@ -204,26 +250,80 @@ class Window(QWidget):
         self.audioPosition.move(150,490)
         self.audioPosition.resize(150,25)
         self.audioPosition.setEnabled(False)
+        
+        self.positionSlider = QSlider(Qt.Horizontal, self)
+        self.positionSlider.setRange(0,0)
+        self.positionSlider.sliderMoved.connect(self.setPosition)
+        self.positionSlider.setGeometry(700,420,600,30)
     
         """
         self.instruct = QLabel(self)
         self.instruct.setText("Enter position(seconds):")
         self.instruct.move(250,465)
         """
+    """
+    def mediaStateChanged(self,state):
+        if self.mediaStateChanged.state() == QMediaPlayer.PlayingState:
+            self.playButton.setIcon
+    """
+    
+    def positionChanged(self,position):
+        self.positionSlider.setValue(position)
+    
+    
+    def setPosition(self,position):
+        self.mediaPlayer.setPosition(position)
+    
     
         #creates labels/buttons, as the thumbnails of each video imported, TODO:implement with import list as proxy
+    def moveOnTimeline(self):
+        position = int(self.positioningRequest.text())
+    
+        currentIndex =  Model.currentVidTimeLineIndex
+        Model.buttonList[currentIndex].move(20+(position)*5.5,585)
+        Model.positionarray[currentIndex].timepos = position
+        self.update()
+    
+    def moveAudioOnTime(self):
+        position = int(self.audioPosition.text())
+    
+        currentAudioIndex = Model.currentAudioTimeIndex
+        Model.audioThumbList[currentAudioIndex].move(20+(position)*5.5,720)
+        self.update
+    
+    
     def createAudioThumbs(self):
-        #audioDuration = self.
-        print("audio")
+        
+        Model.audioThumbList.append(QPushButton(str(Model.audioCurrent+1),self))
+        position = int(self.audioPosition.text())
+        self.audioDuration= self.mediaPlayer.duration()
+
+        #print(str(self.audioDuration))
+
+        #Added minutes
+        self.audioSeconds = int(round((self.audioDuration/1000)))
+        Model.audioThumbList[len(Model.audioThumbList)-1].resize((self.audioSeconds * 5.5),60)
+        Model.audioThumbList[len(Model.audioThumbList)-1].setStyleSheet("border: 1px solid black;background: blue;color:red")
+        Model.audioThumbList[len(Model.audioThumbList)-1].move(20+(position)*5.5,720)
+        Model.audioThumbList[len(Model.audioThumbList)-1].show()
+        Model.audioThumbList[len(Model.audioThumbList)-1].clicked.connect(partial(self.audioTimeLineClicked,len(Model.audioThumbList)-1))
+        self.update()
+
+        self.moveAudio.setEnabled(False)
+        #print(str(self.audioSeconds))
+
     def createButton(self):
-        self.videoDuration = self.mediaPlayer.duration()
-        Model.videoListLength.append(self.videoDuration)
+        Model.videoDuration = self.mediaPlayer.duration()
+        #Model.videoListLength.append(self.videoDuration)
         Model.buttonList.append(QPushButton(str(Model.current+1),self))
         self.position = int(self.positioningRequest.text())
         Window.totalDuration += self.position * 1000
         
-        Model.positionarray.append(positionObject(self.position,len(Model.buttonList)-1))
-        sorted(Model.positionarray,key = attrgetter('timepos'),reverse = True)
+        Model.positionarray.append(positionObject(self.position,Model.current,Model.videoDuration))
+        Model.od = sorted(Model.positionarray,key=lambda x: x.timepos)
+        
+        print(Model.od)
+        #print(Model.od[0].index)
         
         #print("Video duration: " + str(self.mediaPlayer.duration()))
 
@@ -234,12 +334,12 @@ class Window(QWidget):
             Model.buttonList[len(Model.videoList)-1].resize(24 + (vidSeconds * 9),130)
         
         """
-        vidSeconds = int(round((self.videoDuration/1000) % 60))
-        Model.buttonList[len(Model.buttonList)-1].resize(24 + (vidSeconds * 9),130)
-        Model.buttonList[len(Model.buttonList)-1].setStyleSheet("border: 1px solid black")
+        vidSeconds = int(round((Model.videoDuration/1000) % 60))
+        Model.buttonList[len(Model.buttonList)-1].resize((vidSeconds * 5.5),130)
+        Model.buttonList[len(Model.buttonList)-1].setStyleSheet("border: 1px solid black; background:blue; color:red")
         
         
-        Model.buttonList[len(Model.buttonList)-1].move(20+(self.position)*11,625)
+        Model.buttonList[len(Model.buttonList)-1].move(20+(self.position)*5.5,585)
         
         
         
@@ -271,9 +371,11 @@ class Window(QWidget):
         #out1,err1 = p.communicate()
         
         #windows
-        abpath = os.path.abspath(r'bin\output.mp4')
+        #abpath = os.path.abspath(r'bin\output.mp4')
         #abpath = os.path.abspath(r'bin/output.mp4')
+
         #self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(abpath)))
+        self.moveButton.setEnabled(False)
         self.playButton.setEnabled(True)
         self.update()
         
@@ -301,73 +403,150 @@ class Window(QWidget):
                     self.playButton.setText("Play")
                     break
         '''
-        if self.timer.isActive():
-            if self.mediaPlayer.state() == QMediaPlayer.PlayingState:
+
+        #print(Model.positionarray[0].timepos)
+
+        # Starts the timer at the last paused time instead of starting at the totalDuration each time.
+        
+        
+        
+        if Model.pausedTime == 0:
+            print("Hello")
+            if self.timer.isActive() != True:
+                if Model.tempIndex < len(Model.od) - 1:
+                    if ((Model.od[Model.tempIndex+1].timepos * 1000 )- Model.od[Model.tempIndex].duration) < 0:
+                        Model.additionalduration = 0
+                    Model.additionalduration = (Model.od[Model.tempIndex+1].timepos * 1000 )- Model.od[Model.tempIndex].duration
+                else:
+                    Model.additionalduration = 0
+                self.timer.start(Model.od[Model.tempIndex].duration + Model.additionalduration)
+                self.mediaPlayer.play()
+                self.timer.timeout.connect(self.playNext)
+                self.playButton.setText("Pause")
+            else:
                 self.mediaPlayer.pause()
                 self.playButton.setText("Play")
-                self.pausedTime = self.timer.remainingTime()
+                Model.pausedTime = self.timer.remainingTime()
                 self.timer.stop()
-                print(self.pausedTime)
-            else:
-                self.mediaPlayer.play()
-                self.playButton.setText("Pause")
         else:
-            self.timer.start(Window.totalDuration)
-            if self.mediaPlayer.state() == QMediaPlayer.PlayingState:
-                self.mediaPlayer.pause()
-                self.playButton.setText("Play")
-                self.pausedTime = self.timer.remainingTime()
-                self.timer.stop()
-                print(self.pausedTime)
-            else:
+            print("AUSD")
+            if self.timer.isActive() != True:
+                self.timer.start(Model.pausedTime)
                 self.mediaPlayer.play()
                 self.playButton.setText("Pause")
-            
+            else:
+                self.mediaPlayer.pause()
+                self.playButton.setText("Play")
+                Model.pausedTime = self.timer.remainingTime()
+                self.timer.stop()
+                
+        self.newtimer.start(1)
+        self.newtimer.timeout.connect(self.moveIndicator)
+        
+
+    def moveIndicator(self):
+        Window.temptime = self.newtimer.remainingTime()
+  
+        Window.qp.drawLine(20 + Window.temptime,585,20 + Window.temptime,840)
+        #self.repaint()
+
+        temptime = 0
+        time = 0
+        temptime = self.newtimer.remainingTime()
+        time += temptime
+        self.qp.drawLine(20+time,585,20+time,840)
+        #self.repaint()
+        #print(str(self.newtimer.remainingTime()))
+
+
+    def playNext(self):
+        #if (len(Model.od)> 1) and (Model.tempIndex <= len(Model.od)):
+        Model.tempIndex += 1
+        if Model.tempIndex < len(Model.od):
+            self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(Model.videoList[Model.od[Model.tempIndex].index])))
+            self.mediaPlayer.play()
+        else:
+            print("video done")
+            self.timer.stop()
+
+    
     # import function to get the urls needed to display in the mediaplayer widget
     def importFunction(self):
-        #Model.fname, _ = QFileDialog.getOpenFileName(self, 'Open file', '../desktop','All files(*.jpeg *.mp4 *.mov);;Image files(*.jpeg);;Video Files(*.mp4 *.mov)')
+        Model.fname, _ = QFileDialog.getOpenFileName(self, 'Open file', '../desktop','All files(*.jpeg *.mp4 *.mov);;Image files(*.jpeg);;Video Files(*.mp4 *.mov)')
         #windows
-        Model.fname, _ = QFileDialog.getOpenFileName(self, 'Open file', '..\desktop','All files(*.jpeg *.mp4 *.mov);;Image files(*.jpeg);;Video Files(*.mp4 *.mov)')
+        #Model.fname, _ = QFileDialog.getOpenFileName(self, 'Open file', '..\desktop','All files(*.jpeg *.mp4 *.mov);;Image files(*.jpeg);;Video Files(*.mp4 *.mov)')
         if Model.fname != '':
             Model.videoList.append(Model.fname)
+            # print(Model.videoList)
             fi = QFileInfo(Model.fname)
             base = fi.completeBaseName()
+            #print(base)
             self.importBoxList(base)
         # this part changes the url into just the filename to be used in the import list
 
         #self.createButton()
-        
         #TODO//:: needs to move to another function, so ffmpegcommand is called first
-        #ffmpeg_subtitles = ["ffmpeg","-y","-i",r"bin\output.mp4","-i",r"bin\subtitles.srt","-c:v","libx264","-ar","44100","-ac","2","-ab","128k","-strict","-2","-c:s","mov_text","-map","0","-map","1",r"bin\outputfile.mp4"]
+        ffmpeg_subtitles = ["ffmpeg","-y","-i",r"bin\output.mp4","-i",r"bin\subtitles.srt","-c:v","libx264","-ar","44100","-ac","2","-ab","128k","-strict","-2","-c:s","mov_text","-map","0","-map","1",r"bin\outputfile.mp4"]
         #ffmpeg_subtitles = ["ffmpeg","-y","-i",r"bin/output.mp4","-i",r"bin/subtitles.srt","-c:v","libx264","-ar","44100","-ac","2","-ab","128k","-strict","-2","-c:s","mov_text","-map","0","-map","1",r"bin/outputfile.mp4"]
-        #s = subprocess.Popen(ffmpeg_subtitles,stdout=subprocess.PIPE) #.call to fix waiting issue
-        #out1,err1 = s.communicate()
+        s = subprocess.Popen(ffmpeg_subtitles,stdout=subprocess.PIPE)
+        out1,err1 = s.communicate()
 
     def importAudioFunction(self):
-        Model.aname, _ = QFileDialog.getOpenFileName(self, 'Open audio file', '../','All audio files(*.mp3 *.wav)')
+        #Model.aname, _ = QFileDialog.getOpenFileName(self, 'Open audio file', '../desktop','All audio files(*.mp3 *.wav)')
         #windows
-        #Model.aname, _= QFileDialog.getOpenFileName(self, 'Open audio file','..\','All audio files(*.mp3 *.wav)')
+        Model.aname, _= QFileDialog.getOpenFileName(self, 'Open audio file','..\desktop','All audio files(*.mp3 *.wav)')
         if Model.aname != '':
             Model.audioList.append(Model.aname)
             fi = QFileInfo(Model.aname)
             base = fi.completeBaseName()
             self.importAudioList(base)
 
+
+
+
+    def audioTimeLineClicked(self,index):
+        Model.timelineState = True
+        self.cleanImportLists()
+        self.cleanTimeline()
+        Model.audioThumbList[index].setStyleSheet("border: 2px solid red; background:blue;color:red")
+        self.hideTimeButtons()
+        self.hideImportButtons()
+        self.moveAuOn.setEnabled(True)
+        self.moveAuOn.setHidden(False)
+        self.enabelSlider
+    
+    
+
     #clicking each label on the timeline leads here. currently loads video from videourl contained in videoList
     def timelinetoVid(self,index):
         #self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(Model.videoList[index])))
         n =0
+        #self.playButton.setEnabled(True)
+        
+        #highlighting
+        Model.timelineState = True
+        #print(str(Model.timelineState))
+        self.cleanImportLists()
+        self.cleanTimeline()
+        Model.buttonList[index].setStyleSheet("border: 2px solid red; background:blue;color:red")
+        Model.currentVidTimeLineIndex = index
+        self.hideImportButtons()
+        self.hideTimeButtons()
+        self.moveOn.setEnabled(True)
+        self.moveOn.setHidden(False)
+        
+        
+        self.playButton.setEnabled(True)
+        self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(Model.videoList[Model.od[Model.tempIndex].index])))
+        #self.mediaPlayer.play()
+        self.enabelSlider()
+        
+        """
         if len(Model.positionarray) == 1:
             for obj in Model.positionarray:
                 distance = obj.timepos
-
-                #firststr= r"bin/blackvideo" + str(0) +".mp4"
+                firststr= r"bin/blackvideo" + str(0) +".mp4"
                 #ffmpeg_separation = ["ffmpeg","-t",str(distance),"-s","640x580","-f","rawvideo","-pix_fmt","rgb24","-r","25","-i","/dev/zero",firststr]
-
-                # Windows
-                #firststr= r"bin\blackvideo" + str(0) +".mp4"
-                #ffmpeg_separation = ["ffmpeg","-t",str(distance),"-s","640x580","-f","rawvideo","-pix_fmt","rgb24","-r","25","-i","\dev\zero",firststr]
-
                 #black = subprocess.Popen(ffmpeg_separation,stdout=subprocess.PIPE)
                 #out1,err1 = black.communicate()
         else:
@@ -375,60 +554,76 @@ class Window(QWidget):
                 for  x in range(len(positionarray)-1):
                     distance = Model.positionarray[x].timepos - positionarray[x+1].timepos + Model.videoListLength[Model.positionarray[x].index]  #will need an array to hold the distances of multiple videos, at this point it is meant for 2 or less videos
                     finaldistance = Model.positionarray[len(Model.positionarray)-1].timepos
-
-                    
-                    #firststr= r"bin/blackvideo" + str(x) +".mp4"
-                    #secstr = r"bin/blackvideo" + str(x+1) +".mp4"                
+                    firststr= r"bin/blackvideo" + str(x) +".mp4"
+                    secstr = r"bin/blackvideo" + str(x+1) +".mp4"
+                
                     #ffmpeg_separation = ["ffmpeg","-t",str(distance),"-s","640x580","-f","rawvideo","-pix_fmt","rgb24","-r","25","-i","/dev/zero",firststr]
-
-                    # Windows
-                    firststr= r"bin\blackvideo" + str(x) +".mp4"
-                    secstr = r"bin\blackvideo" + str(x+1) +".mp4"
-                    #ffmpeg_separation = ["ffmpeg","-t",str(distance),"-s","640x580","-f","rawvideo","-pix_fmt","rgb24","-r","25","-i","\dev\zero",firststr]
-                    
                     #black = subprocess.call(ffmpeg_separation,stdout=subprocess.PIPE)
                     #out1,err1 = black.communicate()
                     #ffmpeg_separation2= ["ffmpeg","-t",str(finaldistance),"-s","640:480","-f","rawvideo","-pix_fmt","rgb24","-r","25","-i","/dev/zero",secstr]
                     #windows
                     #ffmpeg_separation = ["ffmpeg","-t",str(distance),"-s","640:480","-f","rawvideo","-pix_fmt","rgb24","-r","25","-i","\dev\zero",r"bin\blackvideo"+str(x)+".mov"]
                     #ffmpeg_separation2= ["ffmpeg","-t",str(finaldistance),"-s","640:480","-f","rawvideo","-pix_fmt","rgb24","-r","25","-i","\dev\zero",r"bin\blackvideo"+str(x+1)+".mov"]
-        
-    
-    
-        """
         if self.playButton.text() == "Pause":
             self.playButton.setText("Play")
         """
-        #self.playButton.setEnabled(True)
-
-        #highlighting
-        for i in range(len(Model.buttonList)):
-            Model.buttonList[i].setStyleSheet("border: 2px solid black")
-        Model.buttonList[index].setStyleSheet("border: 2px solid red")
-       
 
     #highlighting for each item clicked on importlist
     def importClicked(self,index):
-        for i in range(len(Model.importList)):
-            Model.importList[i].setStyleSheet("border: 2px solid black")
+        Model.importBoxState = 0
+        Model.timelineState = False
+        self.cleanImportLists()
+        self.cleanTimeline()
+        
         Model.importList[index].setStyleSheet("border: 2px solid red")
-
-
+        self.hideImportButtons()
+        self.hideTimeButtons()
         self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(Model.videoList[index])))
         self.playButton.setEnabled(True)
         self.moveButton.setEnabled(True)
         self.moveButton.setHidden(False)
         self.positioningRequest.setEnabled(True)
+        self.positionSlider.setEnabled(True)
         Model.current = index
+        self.enableMove()
+        self.positionSlider.setEnabled(True)
         
 
     def importAudioClicked(self,index):
+        Model.timelineState = False
+        Model.importBoxState =1
+        self.cleanImportLists()
+        self.cleanTimeline()
+        self.hideImportButtons()
+        self.hideTimeButtons()
+        self.positionSlider.setEnabled(True)
+        
+        Model.importAudioList[index].setStyleSheet("border: 2px solid red")
+        self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(Model.audioList[index])))
+        #mixer.music.load(Model.audioList[index])
+        self.playButton.setEnabled(True)
+        self.moveAudio.setEnabled(True)
+        self.audioPosition.setEnabled(True)
+        self.moveAudio.setHidden(False)
+        Model.audioCurrent = index
+        self.enableAudio()
+        self.positionSlider.setEnabled(True)
+    
+
+
+    def cleanImportLists(self):
+        for i in range(len(Model.importList)):
+            Model.importList[i].setStyleSheet("border: 2px solid black")
         for i in range(len(Model.importAudioList)):
             Model.importAudioList[i].setStyleSheet("border: 2px solid black")
-        Model.importAudioList[i].setStyleSheet("border: 2px solid red")
-
-
-
+        self.setFocus()
+    def cleanTimeline(self):
+        for i in range(len(Model.buttonList)):
+            Model.buttonList[i].setStyleSheet("border: 2px solid black; background:blue")
+        for i in range(len(Model.audioThumbList)):
+            Model.audioThumbList[i].setStyleSheet("Border:2px solid black; background:blue")
+        self.setFocus()
+    
     def timelinetoVid2(self):
         print("vid2")
     
@@ -437,18 +632,45 @@ class Window(QWidget):
     #creates the timeline
     def timeMarks(self):
         self.markers = QLabel(self)
-        self.markers.setGeometry(20, 595, 1400, 30)
+        self.markers.setGeometry(20, 555, 1400, 30)
         self.markers.setStyleSheet("border: 2px solid black")
         self.markValue = 0
-        while self.markValue <= 120:
+        while self.markValue <= 250:
             self.markerLabel = QLabel(self)
             if self.markValue == 0:
-                self.markerLabel.move(20, 600)
+                self.markerLabel.move(20, 555)
             else:
-                self.markerLabel.move(20 + (self.markValue * 11), 600)
-            self.markerLabel.setText(str(self.markValue) + "\n" + "|")
+                self.markerLabel.move(20 + (self.markValue * 5.5), 555)
+            if (self.markValue % 60 == 0):
+                self.markerLabel.setText("|" +str(self.markValue/60)+"0" +"\n" +"|")
+            else:
+                self.markerLabel.setText("\n" + "|")
             self.markerLabel.setStyleSheet("font: 15px; color: purple")
             self.markValue += 5
+        self.markValue = 0
+        while self.markValue <= 250:
+            self.markerLabel = QLabel(self)
+            if self.markValue == 0:
+                self.markerLabel.move(20, 710)
+            else:
+                self.markerLabel.move(20 + (self.markValue * 5.5), 710)
+            self.markerLabel.setText("|")
+            self.markerLabel.setStyleSheet("font: 15px; color: purple")
+            self.markValue += 5
+
+        self.markValue = 0
+        while self.markValue <= 250:
+            self.markerLabel = QLabel(self)
+            if self.markValue == 0:
+                self.markerLabel.move(20, 780)
+            else:
+                self.markerLabel.move(20 + (self.markValue * 5.5), 780)
+            self.markerLabel.setText("|")
+            self.markerLabel.setStyleSheet("font: 15px; color: purple")
+            self.markValue += 5
+        
+
+
 
 
     #deletes videolist file on exit
@@ -492,17 +714,23 @@ class Window(QWidget):
 
     # Prints the text entered in the textbox in the second window
     def printSubtitles(self):
+        Model.subList.append(QLabel(self))
+        Model.subList[len(Model.subList) - 1].setStyleSheet("border: 2px solid transparent")
+        Model.subList[len(Model.subList) - 1].setAlignment(Qt.AlignCenter)
+        Model.subList[len(Model.subList) - 1].setGeometry(740, 350, 500, 50)
+        
         self.subtitleLabel = QLabel(self)
         Model.subtitleList.append(self.entry.get())
+        Model.subList[len(Model.subList) - 1].setText(self.entry.get())
+        #Model.subList[len(Model.subList) - 1].setHidden(False)
         Model.subtitleButtonList.append(QPushButton(str(Model.subtitleList[len(Model.subtitleList) - 1]), self))
 
         self.subtitleDuration = int(self.subLength.get())
-        Model.subtitleButtonList[len(Model.subtitleList) - 1].resize(24 + (self.subtitleDuration * 9),80)
+        Model.subtitleButtonList[len(Model.subtitleList) - 1].resize((self.subtitleDuration * 9),50)
         Model.subtitleButtonList[len(Model.subtitleList) - 1].setStyleSheet("border: 2px solid black")
         
         subPosition = int(self.timePosition.get())
-        print(str(len(Model.subtitleList) - 1))
-        Model.subtitleButtonList[len(Model.subtitleList) - 1].move(24+(subPosition)*11,770)
+        Model.subtitleButtonList[len(Model.subtitleList) - 1].move(24+(subPosition)*11,790)
         Model.subtitleButtonList[len(Model.subtitleList) - 1].show()
         
         #self.subtitleFile = open(r"bin/subtitles.srt", "a+")
@@ -534,12 +762,34 @@ class Window(QWidget):
 
         self.destroySecondWindow()
 
-
+    def hideTimeButtons(self):
+        self.moveButton.setHidden(True)
+        self.moveButton.setEnabled(False)
+        self.moveAudio.setHidden(True)
+        self.moveAudio.setEnabled(False)
+    
+    def hideImportButtons(self):
+        self.moveOn.setHidden(True)
+        self.moveOn.setEnabled(False)
+        self.moveAuOn.setHidden(True)
+        self.moveAuOn.setEnabled(False)
+    
+    def enableMove(self):
+        self.moveButton.setEnabled(True)
+    
+    def enableAudio(self):
+        self.moveAudio.setEnabled(True)
+    
+    
+    def enabelSlider(self):
+        self.positionSlider.setEnabled(True)
+    
     # Destroys the second window
     def destroySecondWindow(self):
         self.root.destroy()
 
     #deletes videolist file on exit
+    '''
     @atexit.register
     def goodbye():
         #file = open('bin/text.txt','w+')
@@ -553,8 +803,9 @@ class Window(QWidget):
             #os.remove('bin/output.mp4')
         else:
             print("files clean!")
+    '''
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     browse = Window()
-    sys.exit(app.exec_())
+sys.exit(app.exec_())

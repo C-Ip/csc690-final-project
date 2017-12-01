@@ -9,6 +9,7 @@ class Model(QWidget):
     W = 0
     H = 0
     B = 0
+    pausedTime = 0
     timelineCount = 0
     importLabel = []
     videoList = []
@@ -18,13 +19,22 @@ class Model(QWidget):
     importList = []
     videoListLength = [0]*20
     current = 0
+    adioCurrent = 0
     currentTimeVid = 1
     subtitleList = []
+    subList = []
     subtitleButtonList = []
     positionarray = []
-<<<<<<< HEAD
-    
-=======
     importAudioList = []
     audioList = []
->>>>>>> 7a5f0830044a7cca086500e2cddab758f5e5b434
+    audioThumbList = []
+    importBoxState = 3
+    currentVidTimeLineIndex = 0
+    currentAudioTimeIndex = 0
+    timelineState = False
+    videos = []
+    tempIndex = 0
+    od = []
+    durationlist = []
+    videoDuration = 0
+    additionalduration = 0
