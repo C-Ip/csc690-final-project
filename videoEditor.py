@@ -72,6 +72,7 @@ class Window(QWidget):
             Window.time += 10
             qp.drawRect(20 * Window.time, 585, 2, 255)
             #qp.fillRect(20 * Window.time - 1, 585, 2, 255)
+            
     #creates the box for the import list, default box
     def importBox(self):
         self.importBoxLabel = QLabel(self)
@@ -255,7 +256,7 @@ class Window(QWidget):
         self.positionSlider = QSlider(Qt.Horizontal, self)
         self.positionSlider.setRange(0,0)
         self.positionSlider.sliderMoved.connect(self.setPosition)
-        self.positionSlider.setGeometry(700,420,600,30)
+        self.positionSlider.setGeometry(20, 585, 1400, 130)
     
         """
         self.instruct = QLabel(self)
@@ -269,7 +270,9 @@ class Window(QWidget):
     """
     
     def positionChanged(self,position):
-        self.positionSlider.setValue(position)
+        print('Position: ' + str(position))
+        self.positionSlider.setValue(position / 40)
+        self.positionSlider.show()
     
     
     def setPosition(self,position):
@@ -337,7 +340,7 @@ class Window(QWidget):
         """
         vidSeconds = int(round((Model.videoDuration/1000) % 60))
         Model.buttonList[len(Model.buttonList)-1].resize((vidSeconds * 5.5),130)
-        Model.buttonList[len(Model.buttonList)-1].setStyleSheet("border: 1px solid black; background:blue; color:red")
+        Model.buttonList[len(Model.buttonList)-1].setStyleSheet("border: 1px solid black; color:red")
         
         
         Model.buttonList[len(Model.buttonList)-1].move(20+(self.position)*5.5,585)
@@ -461,7 +464,7 @@ class Window(QWidget):
         temptime = self.newtimer.remainingTime()
         time += temptime
         self.qp.drawLine(20+time,585,20+time,840)
-        #self.repaint()
+        self.timeLineLabel.repaint()
         #print(str(self.newtimer.remainingTime()))
 
 
@@ -540,7 +543,7 @@ class Window(QWidget):
         #print(str(Model.timelineState))
         self.cleanImportLists()
         self.cleanTimeline()
-        Model.buttonList[index].setStyleSheet("border: 2px solid red; background:blue;color:red")
+        Model.buttonList[index].setStyleSheet("border: 2px solid red;color:red")
         Model.currentVidTimeLineIndex = index
         self.hideImportButtons()
         self.hideTimeButtons()
