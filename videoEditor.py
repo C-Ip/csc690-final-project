@@ -393,62 +393,61 @@ class Window(QWidget):
         self.videoWidget.show()
     """
     def play(self):
-        '''
-        if self.mediaPlayer.state() != QMediaPlayer.PlayingState:
-            self.mediaPlayer.play()
-            self.playButton.setText("Pause")
-            while self.mediaPlayer.state() == QMediaPlayer.PlayingState:
-                Window.totalDuration -= 1
-                if Window.totalDuration == 60000:
-                    self.mediaPlayer.pause()
-                    self.playButton.setText("Play")
-                    break
-        '''
+        if Model.timelineState == False:
+            if self.mediaPlayer.state() != QMediaPlayer.PlayingState:
+                self.mediaPlayer.play()
+                self.playButton.setText("Pause")
+            else:
+                self.mediaPlayer.pause()
+            self.playButton.setText("Play")
+  
 
         #print(Model.positionarray[0].timepos)
 
         # Starts the timer at the last paused time instead of starting at the totalDuration each time.
-            
-        if Model.pausedTime == 0:
-            print("Hello")
-            if self.timer.isActive() != True:
-                if Model.tempIndex < len(Model.od) - 1:
-                    if ((Model.od[Model.tempIndex+1].timepos * 1000 )- Model.od[Model.tempIndex].duration) < 0:
+        if Model.timelineState == True:
+            if Model.pausedTime == 0:
+                print("Hello")
+                if self.timer.isActive() != True:
+                    if Model.tempIndex == len(Model.od):
+                        Model.tempIndex = 0
+                    if Model.tempIndex < len(Model.od) - 1:
+                        if ((Model.od[Model.tempIndex+1].timepos * 1000 )- Model.od[Model.tempIndex].duration) < 0:
+                            Model.additionalduration = 0
+                        Model.additionalduration = (Model.od[Model.tempIndex+1].timepos * 1000 )- Model.od[Model.tempIndex].duration
+                    else:
                         Model.additionalduration = 0
-                    Model.additionalduration = (Model.od[Model.tempIndex+1].timepos * 1000 )- Model.od[Model.tempIndex].duration
+                    self.timer.start(Model.od[Model.tempIndex].duration + Model.additionalduration)
+                    self.mediaPlayer.play()
+                    if len(Model.audioList) != 0 and self.soundPosition != 0:
+                        self.timer.singleShot((Model.od[Model.tempIndex].duration + Model.additionalduration) - (self.soundPosition * 1000), self.playAudio)
+                    self.timer.timeout.connect(self.playNext)
+                    self.playButton.setText("Pause")
                 else:
-                    Model.additionalduration = 0
-                self.timer.start(Model.od[Model.tempIndex].duration + Model.additionalduration)
-                self.mediaPlayer.play()
-                if len(Model.audioList) != 0 and self.soundPosition != 0:
-                    self.timer.singleShot((Model.od[Model.tempIndex].duration + Model.additionalduration) - (self.soundPosition * 1000), self.playAudio)
-                self.timer.timeout.connect(self.playNext)
-                self.playButton.setText("Pause")
+                    self.mediaPlayer.pause()
+                    self.audioPlayer.pause()
+                    self.playButton.setText("Play")
+                    Model.pausedTime = self.timer.remainingTime()
+                    self.timer.stop()
             else:
-                self.mediaPlayer.pause()
-                self.audioPlayer.pause()
-                self.playButton.setText("Play")
-                Model.pausedTime = self.timer.remainingTime()
-                self.timer.stop()
-        else:
-            print("AUSD")
-            if self.audioPlayer.state() == QMediaPlayer.PlayingState:
-                self.audioPlayer.pause()
-            else:
-                self.audioPlayer.play()
-                
-            if self.timer.isActive() != True:
-                self.timer.start(Model.pausedTime)
-                self.mediaPlayer.play()
-                self.playButton.setText("Pause")
-            else:
-                self.mediaPlayer.pause()
-                self.playButton.setText("Play")
-                Model.pausedTime = self.timer.remainingTime()
-                self.timer.stop()
-                
-        self.newtimer.start(1)
-        self.newtimer.timeout.connect(self.moveIndicator)
+                print("AUSD")
+                if self.audioPlayer.state() == QMediaPlayer.PlayingState:
+                    self.audioPlayer.pause()
+                else:
+                    self.audioPlayer.play()
+                    
+                if self.timer.isActive() != True:
+                    self.timer.start(Model.pausedTime)
+                    self.mediaPlayer.play()
+                    self.playButton.setText("Pause")
+                else:
+                    self.mediaPlayer.pause()
+                    self.playButton.setText("Play")
+                    Model.pausedTime = self.timer.remainingTime()
+                    self.timer.stop()
+                    
+            self.newtimer.start(1)
+            self.newtimer.timeout.connect(self.moveIndicator)
         
 
     def moveIndicator(self):
@@ -519,6 +518,9 @@ class Window(QWidget):
         self.cleanImportLists()
         self.cleanTimeline()
         Model.audioThumbList[index].setStyleSheet("border: 2px solid red; background:blue;color:red")
+        if Model.videoList:
+            self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(Model.videoList[Model.od[Model.tempIndex].index])))
+        self.audioPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(Model.audioList[index])))
         self.hideTimeButtons()
         self.hideImportButtons()
         self.moveAuOn.setEnabled(True)
@@ -547,6 +549,8 @@ class Window(QWidget):
         
         
         self.playButton.setEnabled(True)
+        if Model.audioList:
+            self.audioPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(Model.audioList[index])))
         self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(Model.videoList[Model.od[Model.tempIndex].index])))
         #self.mediaPlayer.play()
         self.enabelSlider()
@@ -609,7 +613,7 @@ class Window(QWidget):
         self.positionSlider.setEnabled(True)
         
         Model.importAudioList[index].setStyleSheet("border: 2px solid red")
-        self.audioPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(Model.audioList[index])))
+        self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(Model.audioList[index])))
         #mixer.music.load(Model.audioList[index])
         self.playButton.setEnabled(True)
         self.moveAudio.setEnabled(True)
