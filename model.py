@@ -19,7 +19,7 @@ class Model(QWidget):
     importList = []
     videoListLength = [0]*20
     current = 0
-    adioCurrent = 0
+    audioCurrent = 0
     currentTimeVid = 1
     subtitleList = []
     subList = []
@@ -39,3 +39,5 @@ class Model(QWidget):
     videoDuration = 0
     additionalduration = 0
     temp = 0
+    audiotempIndex = 0
+    anothertempduration = 0
