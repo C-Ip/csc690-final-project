@@ -10,6 +10,7 @@ class Model(QWidget):
     H = 0
     B = 0
     pausedTime = 0
+    pausedAudio = 0
     audioTime = 0
     timelineCount = 0
     importLabel = []

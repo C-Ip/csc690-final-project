@@ -298,11 +298,10 @@ class Window(QWidget):
         Model.od = sorted(Model.positionarray,key=lambda x: x.timepos)
     
     def moveAudioOnTime(self):
-        position = int(self.audioPosition.text())
-    
-        currentAudioIndex = Model.currentAudioTimeIndex
-        Model.audioThumbList[currentAudioIndex].move(20+(position)*5.5,720)
         self.soundPosition = int(self.audioPosition.text())
+        currentAudioIndex = Model.currentAudioTimeIndex
+        Model.audioThumbList[currentAudioIndex].move(20+(self.soundPosition)*5.5,720)
+        
         self.update()
     
     
