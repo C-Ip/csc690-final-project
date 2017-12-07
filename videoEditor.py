@@ -317,7 +317,7 @@ class Window(QWidget):
         #Added minutes
         self.audioSeconds = int(round((self.audioDuration/1000)))
         Model.audioThumbList[len(Model.audioThumbList)-1].resize((self.audioSeconds * 5.5),60)
-        Model.audioThumbList[len(Model.audioThumbList)-1].setStyleSheet("border: 1px solid black;background: blue;color:red")
+        Model.audioThumbList[len(Model.audioThumbList)-1].setStyleSheet("border: 1px solid black;color:red")
         Model.audioThumbList[len(Model.audioThumbList)-1].move(20+(self.soundPosition)*5.5,720)
         Model.audioThumbList[len(Model.audioThumbList)-1].show()
         Model.audioThumbList[len(Model.audioThumbList)-1].clicked.connect(partial(self.audioTimeLineClicked,len(Model.audioThumbList)-1))
