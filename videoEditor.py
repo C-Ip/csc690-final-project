@@ -207,6 +207,11 @@ class Window(QWidget):
         self.addSubtitleButton.setStyleSheet("background-color: gray")
         self.addSubtitleButton.move(800, 500)
         self.addSubtitleButton.clicked.connect(self.addSubtitles)
+        
+        self.stopbutton = QPushButton("stop",self)
+        self.stopbutton.setStyleSheet("background-color: gray")
+        self.stopbutton.move(1000,500)
+        self.addSubtitleButton.clicked.connect(self.stopall)
 
         # Move to timeline button
         self.moveButton = QPushButton("Video to Timeline", self)
@@ -215,6 +220,7 @@ class Window(QWidget):
         self.moveButton.clicked.connect(self.createButton)
         self.moveButton.setEnabled(False)
         self.moveButton.setHidden(True)
+        
         
         #move audio to timeline
         self.moveAudio = QPushButton("Audio to Timeline",self)
@@ -257,6 +263,8 @@ class Window(QWidget):
         self.positionSlider.setRange(0,0)
         self.positionSlider.sliderMoved.connect(self.setPosition)
         self.positionSlider.setGeometry(20, 585, 1400, 130)
+        
+    
     
         """
         self.instruct = QLabel(self)
@@ -287,6 +295,7 @@ class Window(QWidget):
         Model.buttonList[currentIndex].move(20+(position)*5.5,585)
         Model.positionarray[currentIndex].timepos = position
         self.update()
+        Model.od = sorted(Model.positionarray,key=lambda x: x.timepos)
     
     def moveAudioOnTime(self):
         position = int(self.audioPosition.text())
@@ -295,6 +304,7 @@ class Window(QWidget):
         Model.audioThumbList[currentAudioIndex].move(20+(position)*5.5,720)
         self.soundPosition = int(self.audioPosition.text())
         self.update()
+    
     
     
     def createAudioThumbs(self):
@@ -485,6 +495,11 @@ class Window(QWidget):
     def playAudio(self):
         self.audioPlayer.play()
     
+    def stopall(self):
+        self.timer.stop()
+        self.mediaPlayer.stop()
+        self.audioPlayer.stop()
+    
     # import function to get the urls needed to display in the mediaplayer widget
     def importFunction(self):
         Model.fname, _ = QFileDialog.getOpenFileName(self, 'Open file', '../desktop','All files(*.jpeg *.mp4 *.mov);;Image files(*.jpeg);;Video Files(*.mp4 *.mov)')
@@ -524,10 +539,10 @@ class Window(QWidget):
         Model.timelineState = True
         self.cleanImportLists()
         self.cleanTimeline()
-        Model.audioThumbList[index].setStyleSheet("border: 2px solid red; background:blue;color:red")
+        Model.audioThumbList[index].setStyleSheet("border: 2px solid red;color:red")
         if len(Model.buttonList) > 0:
             self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(Model.videoList[Model.od[Model.tempIndex].index])))
-        self.audioPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(Model.audioList[index])))
+        self.audioPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(Model.audioList[Model.tempIndex])))
         self.hideTimeButtons()
         self.hideImportButtons()
         self.moveAuOn.setEnabled(True)
@@ -557,9 +572,12 @@ class Window(QWidget):
         self.timer.stop()
         
         self.playButton.setEnabled(True)
+
         if len(Model.audioThumbList) > 0:
-            self.audioPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(Model.audioList[index])))
+            self.audioPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(Model.audioList[Model.tempIndex])))
         self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(Model.videoList[Model.od[Model.tempIndex].index])))
+        if Model.od[0].timepos != 0:
+            self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(r"blackvid.mp4")))
         #self.mediaPlayer.play()
         self.enabelSlider()
         
@@ -641,9 +659,9 @@ class Window(QWidget):
         self.setFocus()
     def cleanTimeline(self):
         for i in range(len(Model.buttonList)):
-            Model.buttonList[i].setStyleSheet("border: 2px solid black; background:blue")
+            Model.buttonList[i].setStyleSheet("border: 2px solid black")
         for i in range(len(Model.audioThumbList)):
-            Model.audioThumbList[i].setStyleSheet("Border:2px solid black; background:blue")
+            Model.audioThumbList[i].setStyleSheet("Border:2px solid black")
         self.setFocus()
     
     def timelinetoVid2(self):

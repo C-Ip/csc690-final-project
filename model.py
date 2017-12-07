@@ -42,4 +42,5 @@ class Model(QWidget):
     temp = 0
     audiotempIndex = 0
     anothertempduration =0
+    temptime = 0
 
