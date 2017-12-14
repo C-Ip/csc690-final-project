@@ -44,4 +44,8 @@ class Model(QWidget):
     audiotempIndex = 0
     anothertempduration =0
     temptime = 0
+    subtitleStart = []
+    subtitleDuration = []
+    subtitleIndex = 0
+    subTimePause = 0
 

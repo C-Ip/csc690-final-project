@@ -39,6 +39,8 @@ class Window(QWidget):
 
         self.timer = QTimer(self)
         self.newtimer = QTimer(self)
+        self.subtitleTimer = QTimer(self)
+        self.subStopTimer = QTimer(self)
         
         #video player creation, move to own definition later
         self.mediaPlayer = QMediaPlayer(self)
@@ -352,7 +354,6 @@ class Window(QWidget):
         Model.buttonList[len(Model.buttonList)-1].resize((vidSeconds * 5.5),130)
         Model.buttonList[len(Model.buttonList)-1].setStyleSheet("border: 1px solid black; color:red")
         
-        
         Model.buttonList[len(Model.buttonList)-1].move(20+(self.position)*5.5,585)
         
         
@@ -430,8 +431,17 @@ class Window(QWidget):
                         Model.additionalduration = (Model.od[Model.tempIndex+1].timepos * 1000 )- Model.od[Model.tempIndex].duration
                     else:
                         Model.additionalduration = 0
+                    # Adds subtitles to preview
                     self.timer.start(Model.od[Model.tempIndex].duration + Model.additionalduration)
+                    print("Subtitle Duration: " + str(Model.subtitleDuration))
+                    print("Subtitle Start: " + str(Model.subtitleStart))
+                    self.subtitleTimer.start(Model.subtitleStart[Model.subtitleIndex] + Model.subtitleDuration[Model.subtitleIndex])
+                    print("Timer: " + str(self.timer.remainingTime()))
+                    print("Sub Timer: " + str(self.subtitleTimer.remainingTime()))
                     self.mediaPlayer.play()
+                    if Model.subtitleIndex < len(Model.subList):
+                        self.subtitleTimer.timeout.connect(self.playSubtitles)
+                    #
                     if len(Model.audioList) != 0 and self.soundPosition != 0:
                         self.timer.singleShot((self.soundPosition * 1000), self.playAudio)
                     if len(Model.audioList)!=0 and self.soundPosition == 0:
@@ -443,7 +453,10 @@ class Window(QWidget):
                     self.audioPlayer.pause()
                     self.playButton.setText("Play")
                     Model.pausedTime = self.timer.remainingTime()
+                    Model.subTimePause = self.subtitleTimer.remainingTime()
+                    self.subtitleTimer.stop()
                     self.timer.stop()
+                    Model.subList[Model.subtitleIndex - 1].setHidden(True)
             else:
                 print("AUSD")
                 if self.audioPlayer.state() == QMediaPlayer.PlayingState:
@@ -453,6 +466,7 @@ class Window(QWidget):
                     
                 if self.timer.isActive() != True:
                     self.timer.start(Model.pausedTime)
+                    self.subtitleTimer.start(Model.subTimePause)
                     self.mediaPlayer.play()
                     self.playButton.setText("Pause")
                 else:
@@ -460,9 +474,13 @@ class Window(QWidget):
                     self.playButton.setText("Play")
                     Model.pausedTime = self.timer.remainingTime()
                     self.timer.stop()
+                    Model.subTimePause = self.subtitleTimer.remainingTime()
+                    self.subtitleTimer.stop()
+                    Model.subList[Model.subtitleIndex - 1].setHidden(True)
                     
             self.newtimer.start(1)
             self.newtimer.timeout.connect(self.moveIndicator)
+            
         
 
     def moveIndicator(self):
@@ -498,6 +516,15 @@ class Window(QWidget):
         self.timer.stop()
         self.mediaPlayer.stop()
         self.audioPlayer.stop()
+    #
+    def playSubtitles(self):
+        if Model.subtitleIndex == 0:
+            Model.subList[Model.subtitleIndex].setHidden(False)
+        if Model.subtitleIndex < len(Model.subList) - 1:
+            Model.subList[Model.subtitleIndex].setHidden(False)
+            Model.subList[Model.subtitleIndex - 1].setHidden(True)
+        Model.subtitleIndex += 1
+    #   
     
     # import function to get the urls needed to display in the mediaplayer widget
     def importFunction(self):
@@ -753,6 +780,7 @@ class Window(QWidget):
 
     # Prints the text entered in the textbox in the second window
     def printSubtitles(self):
+        # Labels of subtitles that show on preview
         Model.subList.append(QLabel(self))
         Model.subList[len(Model.subList) - 1].setStyleSheet("border: 2px solid transparent")
         Model.subList[len(Model.subList) - 1].setAlignment(Qt.AlignCenter)
@@ -765,10 +793,14 @@ class Window(QWidget):
         Model.subtitleButtonList.append(QPushButton(str(Model.subtitleList[len(Model.subtitleList) - 1]), self))
 
         self.subtitleDuration = int(self.subLength.get())
+        # List of subtitle's duration
+        Model.subtitleDuration.append(self.subtitleDuration * 1000)
         Model.subtitleButtonList[len(Model.subtitleList) - 1].resize((self.subtitleDuration * 9),50)
         Model.subtitleButtonList[len(Model.subtitleList) - 1].setStyleSheet("border: 2px solid black")
-        
+
+        # When subtitles start
         subPosition = int(self.timePosition.get())
+        Model.subtitleStart.append(subPosition * 1000)
         Model.subtitleButtonList[len(Model.subtitleList) - 1].move(24+(subPosition)*11,790)
         Model.subtitleButtonList[len(Model.subtitleList) - 1].show()
         
