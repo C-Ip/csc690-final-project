@@ -230,6 +230,13 @@ class Window(QWidget):
         self.moveAudio.setEnabled(False)
         self.moveAudio.setHidden(True)
         
+        self.saveVideo =QPushButton("Save Video",self)
+        self.saveVideo.setStyleSheet("background-color:gray")
+        self.saveVideo.move(500, 470)
+        self.saveVideo.clicked.connect(self.exportFile)
+        self.saveVideo.setEnabled(False)
+        
+        
         
         self.moveOn = QPushButton("Move video",self)
         self.moveOn.setStyleSheet("background-color:gray")
@@ -264,7 +271,6 @@ class Window(QWidget):
         self.positionSlider.sliderMoved.connect(self.setPosition)
         self.positionSlider.setGeometry(20, 585, 1400, 130)
         
-    
     
         """
         self.instruct = QLabel(self)
@@ -354,24 +360,23 @@ class Window(QWidget):
         
         
         Model.buttonList[len(Model.buttonList)-1].move(20+(self.position)*5.5,585)
-        
-        
-        
-        
-        """
-        if len(Model.videoListLength) == 1:
-            Model.buttonList[len(Model.videoList)-1].move(20,625)
-        else:
-            Model.buttonList[len(Model.videoList)-1].move(20,625)
-        """
         Model.buttonList[len(Model.buttonList)-1].clicked.connect(partial(self.timelinetoVid, len(Model.buttonList)-1))
         Model.buttonList[len(Model.buttonList)-1].show()
         
         #writes to a text file to create a list for the ffmpeg comman
-        #self.file = open(r'bin/text.txt','w+')
+        self.file = open(r'bin/text.txt','a+')
         #windows
-        self.file = open(r'bin\text.txt','w+')
-        self.file.write("file "+"'" + "%s'\n" %Model.videoList[Model.current])
+        #self.file = open(r'bin\text.txt','w+')
+        abpath = os.path.abspath("./empty.mp4")
+        #windows
+        #abpath = os.path.abspath(r'.\empty.avi')
+        self.getDelays()
+        if len(Model.delayTimes)>0:
+            self.file.write("file '" +str(abpath) + "'\n" + "duration " + str(Model.delayTimes[Model.i])+"\n")
+            Model.i +=1
+        self.file.write("file '"+str(Model.videoList[Model.current])+"'\n")
+
+        #self.file.write("file '.."+ str(abpath) + "'\n" + "duration %s\n" %Model.delayTimes[Model.delayCount])
         self.file.close()
 
         #FFMPEG command, runs the application from the OS to concactenate media files. TODO: fix the usage of different format/codec files
@@ -384,13 +389,11 @@ class Window(QWidget):
 
         #out1,err1 = p.communicate()
         
-        #windows
-        #abpath = os.path.abspath(r'bin\output.mp4')
-        #abpath = os.path.abspath(r'bin/output.mp4')
 
         #self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(abpath)))
         self.moveButton.setEnabled(False)
         self.playButton.setEnabled(True)
+        self.saveVideo.setEnabled(True)
         self.update()
         
 
@@ -606,6 +609,22 @@ class Window(QWidget):
         if self.playButton.text() == "Pause":
             self.playButton.setText("Play")
         """
+    def getDelays(self):
+        if Model.i <len(Model.od)-1:
+            Model.delayTimes.append(Model.od[Model.i+1].timepos - ((Model.od[Model.i].duration)/1000 + Model.od[Model.i].timepos))
+
+    def exportFile(self):
+        #FFMPEG command, runs the application from the OS to concactenate media files. TODO: fix the usage of different format/codec files
+        ffmpeg_command = ["ffmpeg","-y","-f","concat","-safe","0","-i",r"bin/text.txt","-vf","scale=1280:720","-acodec","copy",r"bin/output.mp4"]
+        #windows mode
+        #ffmpeg_command = ["ffmpeg","-y","-f","concat","-safe","0","-i",r"bin\text.txt","-vf","scale=1280:720","-acodec","copy",r"bin\output.mp4"]
+        #ffmpeg_blank = ["ffmpeg","-f","lavfi","-i","color=c=black:s=320x240:d=2","-vf",r"bin\output.mp4"]
+        p = subprocess.call(ffmpeg_command,stdout=subprocess.PIPE)
+        
+    
+    #out1,err1 = p.communicate()
+    
+    
 
     #highlighting for each item clicked on importlist
     def importClicked(self,index):
@@ -828,22 +847,21 @@ class Window(QWidget):
         self.root.destroy()
 
     #deletes videolist file on exit
-    '''
     @atexit.register
     def goodbye():
-        #file = open('bin/text.txt','w+')
+        file = open('bin/text.txt','w+')
         #windows
-        file = open('bin\text.txt','w+')
+        #file = open('bin\text.txt','w+')
         file.truncate()
         #windows
+        """
         if os.path.isfile('bin\output.mp4'):
             os.remove('bin\output.mp4')
         #if os.path.isfile('bin/output.mp4'):
             #os.remove('bin/output.mp4')
         else:
             print("files clean!")
-    '''
-
+        """
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     browse = Window()

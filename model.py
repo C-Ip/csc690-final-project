@@ -44,4 +44,7 @@ class Model(QWidget):
     audiotempIndex = 0
     anothertempduration =0
     temptime = 0
+    delayTimes=[]
+    delayCount = 0
+    i =0
 
