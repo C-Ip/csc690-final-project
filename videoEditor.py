@@ -769,9 +769,9 @@ class Window(QWidget):
     #deletes videolist file on exit
     @atexit.register
     def goodbye():
-        #file = open('bin/text.txt','w+')
+        file = open('bin/text.txt','w+')
         #windows
-        file = open('bin\text.txt','w+')
+        #file = open('bin\text.txt','w+')
         file.truncate()
         #windows
         """
