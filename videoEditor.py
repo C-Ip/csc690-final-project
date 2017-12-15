@@ -1,6 +1,23 @@
 #!/usr/bin/python3
+
+'''
+Fall 2017 CSC 690
+
+File: videoEditor.py
+
+By: Calvin Ip & Jerry AuYeung
+Last revised: 12/14/2017
+
+
+Creates the layout of the application vidEdit. This is a video editing application
+which allows users to import videos and audio files, create subtitles, and
+export the videos in the time line. Users can move videos and audio within the
+time line and preview the videos.
+
+'''
+
 import sys, os, subprocess, atexit, operator, math
-from pygame import mixer
+
 from PyQt5 import QtCore
 from operator import itemgetter,attrgetter
 from PyQt5.QtMultimedia import QMediaContent,QMediaPlayer
@@ -24,8 +41,6 @@ class Window(QWidget):
     def __init__(self):
         super().__init__()
         self.title = "Video Editor"
-        mixer.pre_init(44100,-16,2,4096)
-        mixer.init()
         
         self.display()
         self.initUI()
@@ -267,9 +282,9 @@ class Window(QWidget):
         Model.od = sorted(Model.positionarray,key=lambda x: x.timepos)
     
     def moveAudioOnTime(self):
-        self.soundPosition = int(self.audioPosition.text())
+        Model.soundPosition = int(self.audioPosition.text())
         currentAudioIndex = Model.currentAudioTimeIndex
-        Model.audioThumbList[currentAudioIndex].move(20+(self.soundPosition)*5.5,720)
+        Model.audioThumbList[currentAudioIndex].move(20+(Model.soundPosition)*5.5,720)
         
         self.update()
     
@@ -278,7 +293,7 @@ class Window(QWidget):
     def createAudioThumbs(self):
         
         Model.audioThumbList.append(QPushButton(str(Model.audioCurrent+1),self))
-        self.soundPosition = int(self.audioPosition.text())
+        Model.soundPosition = int(self.audioPosition.text())
         self.audioDuration= self.mediaPlayer.duration()
 
 
@@ -286,7 +301,7 @@ class Window(QWidget):
         self.audioSeconds = int(round((self.audioDuration/1000)))
         Model.audioThumbList[len(Model.audioThumbList)-1].resize((self.audioSeconds * 5.5),60)
         Model.audioThumbList[len(Model.audioThumbList)-1].setStyleSheet("border: 1px solid black;color:red")
-        Model.audioThumbList[len(Model.audioThumbList)-1].move(20+(self.soundPosition)*5.5,720)
+        Model.audioThumbList[len(Model.audioThumbList)-1].move(20+(Model.soundPosition)*5.5,720)
         Model.audioThumbList[len(Model.audioThumbList)-1].show()
         Model.audioThumbList[len(Model.audioThumbList)-1].clicked.connect(partial(self.audioTimeLineClicked,len(Model.audioThumbList)-1))
         self.update()
@@ -315,12 +330,12 @@ class Window(QWidget):
         Model.buttonList[len(Model.buttonList)-1].show()
         
         #writes to a text file to create a list for the ffmpeg comman
-        self.file = open(r'bin/text.txt','a+')
+        #self.file = open(r'bin/text.txt','a+')
         #windows
-        #self.file = open(r'bin\text.txt','w+')
-        abpath = os.path.abspath("./empty.mp4")
+        self.file = open(r'bin\text.txt','w+')
+        #abpath = os.path.abspath("./empty.mp4")
         #windows
-        #abpath = os.path.abspath(r'.\empty.avi')
+        abpath = os.path.abspath(r'.\empty.avi')
         self.getDelays()
         if len(Model.delayTimes)>0:
             self.file.write("file '" +str(abpath) + "'\n" + "duration " + str(Model.delayTimes[Model.i])+"\n")
@@ -355,7 +370,7 @@ class Window(QWidget):
                         Model.additionalduration = (Model.od[Model.tempIndex+1].timepos * 1000 )- Model.od[Model.tempIndex].duration
                     else:
                         Model.additionalduration = 0
-                    # Adds subtitles to preview
+
                     self.timer.start(Model.od[Model.tempIndex].duration + Model.additionalduration)
                     print("Subtitle Duration: " + str(Model.subtitleDuration))
                     print("Subtitle Start: " + str(Model.subtitleStart))
@@ -365,11 +380,10 @@ class Window(QWidget):
                     self.mediaPlayer.play()
                     if Model.subtitleIndex < len(Model.subList):
                         self.subtitleTimer.timeout.connect(self.playSubtitles)
-                    #
-                    if len(Model.audioList) != 0 and self.soundPosition != 0:
-                        self.timer.singleShot((self.soundPosition * 1000), self.playAudio)
-                    if len(Model.audioList)!=0 and self.soundPosition == 0:
-                        self.timer.singleShot(self.soundPosition * 1000, self.playAudio)
+                    if len(Model.audioList) != 0 and Model.soundPosition != 0:
+                        self.timer.singleShot((Model.soundPosition * 1000), self.playAudio)
+                    if len(Model.audioList)!=0 and Model.soundPosition == 0:
+                        self.timer.singleShot(Model.soundPosition * 1000, self.playAudio)
                     self.timer.timeout.connect(self.playNext)
                     self.playButton.setText("Pause")
                 else:
@@ -380,7 +394,6 @@ class Window(QWidget):
                     Model.subTimePause = self.subtitleTimer.remainingTime()
                     self.subtitleTimer.stop()
                     self.timer.stop()
-                    Model.subList[Model.subtitleIndex - 1].setHidden(True)
             else:
                 print("AUSD")
                 if self.audioPlayer.state() == QMediaPlayer.PlayingState:
@@ -448,9 +461,9 @@ class Window(QWidget):
     
     # import function to get the urls needed to display in the mediaplayer widget
     def importFunction(self):
-        Model.fname, _ = QFileDialog.getOpenFileName(self, 'Open file', '../desktop','All files(*.jpeg *.mp4 *.mov);;Image files(*.jpeg);;Video Files(*.mp4 *.mov)')
+        #Model.fname, _ = QFileDialog.getOpenFileName(self, 'Open file', '../desktop','All files(*.jpeg *.mp4 *.mov);;Image files(*.jpeg);;Video Files(*.mp4 *.mov)')
         #windows
-        #Model.fname, _ = QFileDialog.getOpenFileName(self, 'Open file', '..\desktop','All files(*.jpeg *.mp4 *.mov);;Image files(*.jpeg);;Video Files(*.mp4 *.mov)')
+        Model.fname, _ = QFileDialog.getOpenFileName(self, 'Open file', '..\desktop','All files(*.jpeg *.mp4 *.mov);;Image files(*.jpeg);;Video Files(*.mp4 *.mov)')
         if Model.fname != '':
             Model.videoList.append(Model.fname)
             # print(Model.videoList)
@@ -525,20 +538,20 @@ class Window(QWidget):
 
     def exportFile(self):
         #FFMPEG command, runs the application from the OS to concactenate media files. TODO: fix the usage of different format/codec files
-        ffmpeg_command = ["ffmpeg","-y","-f","concat","-safe","0","-i",r"bin/text.txt","-vf","scale=1280:720","-acodec","copy",r"bin/output.mp4"]
+        #ffmpeg_command = ["ffmpeg","-y","-f","concat","-safe","0","-i",r"bin/text.txt","-vf","scale=1280:720","-acodec","copy",r"bin/output.mp4"]
         #windows mode
-        #ffmpeg_command = ["ffmpeg","-y","-f","concat","-safe","0","-i",r"bin\text.txt","-vf","scale=1280:720","-acodec","copy",r"bin\output.mp4"]
+        ffmpeg_command = ["ffmpeg","-y","-f","concat","-safe","0","-i",r"bin\text.txt","-vf","scale=1280:720","-acodec","copy",r"bin\output.mp4"]
         p = subprocess.call(ffmpeg_command,stdout=subprocess.PIPE)
     
-        ffmpeg_audio = ["ffmpeg","-y","-i",r"bin\output.mp4","-itsoffset",str(Model.audioPosition/1000),str(self.importAudioList[0]),"-map", "0:0","-map","1:0","-c:v","copy","-preset","ultrafast","-async","1",r"bin\needSubs.mp4"]
+        ffmpeg_audio = ["ffmpeg","-y","-i",r"bin\output.mp4","-i",str(Model.audioList[0]),"-map", "0:0","-map","1:0","-c:v","copy","-preset","ultrafast","-async","1",r"bin\needSubs.mp4"]
         a = subprocess.call(ffmpeg_audio,stdout=subprocess.PIPE)
         
         ffmpeg_subtitles = ["ffmpeg","-y","-i",r"bin\needSubs.mp4","-i",r"bin\subtitles.srt","-c:v","libx264","-ar","44100","-ac","2","-ab","128k","-strict","-2","-c:s","mov_text","-map","0","-map","1",r"bin\finalVid.mp4"]
         s = subprocess.Popen(ffmpeg_subtitles,stdout=subprocess.PIPE)
         
-        out1,err1 = s.communicate()
-        out1,err1 = p.communicate()
-        out2,err2 = a.communicate()
+        #out1,err1 = s.communicate()
+        #out1,err1 = p.communicate()
+        #out2,err2 = a.communicate()
     
 
     #highlighting for each item clicked on importlist
@@ -769,9 +782,9 @@ class Window(QWidget):
     #deletes videolist file on exit
     @atexit.register
     def goodbye():
-        file = open('bin/text.txt','w+')
+        #file = open('bin/text.txt','w+')
         #windows
-        #file = open('bin\text.txt','w+')
+        file = open('bin\text.txt','w+')
         file.truncate()
         #windows
         """

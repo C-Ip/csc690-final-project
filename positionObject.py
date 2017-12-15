@@ -1,4 +1,16 @@
+'''
 
+Fall 2017 CSC 690
+
+File: videoEditor.py
+
+By: Calvin Ip & Jerry AuYeung
+Last revised: 12/14/2017
+
+This is an object created to hold the position the videos were placed at,
+the duration of each video, and the index of the list of videos.
+
+'''
 
 
 

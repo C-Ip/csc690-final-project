@@ -1,5 +1,18 @@
 #!/usr/bin/python3
 
+'''
+
+Fall 2017 CSC 690
+
+File: videoEditor.py
+
+By: Calvin Ip & Jerry AuYeung
+Last revised: 12/14/2017
+
+Model for videoEditor.py. This file only holds the variables we used.
+
+'''
+
 import sys, os
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QCheckBox
 from PyQt5.QtGui import QPixmap, QImage
@@ -53,5 +66,6 @@ class Model(QWidget):
     subtitleDuration = []
     subtitleIndex = 0
     subTimePause = 0
+    soundPosition = 0
 
 
