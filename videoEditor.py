@@ -645,7 +645,6 @@ class Window(QWidget):
         self.subtitleLabel = QLabel(self)
         Model.subtitleList.append(self.entry.get())
         Model.subList[len(Model.subList) - 1].setText(self.entry.get())
-        #Model.subList[len(Model.subList) - 1].setHidden(False)
         Model.subtitleButtonList.append(QPushButton(str(Model.subtitleList[len(Model.subtitleList) - 1]), self))
 
         self.subtitleDuration = int(self.subLength.get())
