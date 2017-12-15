@@ -11,3 +11,5 @@ Instructions:
 3. "pip3 install functools"
 4. "pip3 install tkinter"
 6. Once everything is installed, run the program by entering command "python videoeditor.py"
+
+* If you are using MAC, need to comment out lines: 307, 421, 432, 664 and 722. Uncomment lines: 305, 419, 430, 662 and 720. This is because some ffmpeg functions were created for Windows OS. *

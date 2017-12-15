@@ -1,4 +1,1 @@
-<<<<<<< HEAD
-file 'C:/Users/ipcal/Desktop/csc690-final-project/Boruto.mp4'
-=======
->>>>>>> 84943959c68103ab909e87a21284b4579a93b3a4
+file 'C:/Users/ipcal/Desktop/csc690-final-project/empty.mp4'

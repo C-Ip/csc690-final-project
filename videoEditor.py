@@ -24,7 +24,7 @@ from PyQt5.QtMultimedia import QMediaContent,QMediaPlayer
 from PyQt5.QtMultimediaWidgets import QVideoWidget
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QCheckBox, QFileDialog, QLineEdit,QSlider
 from PyQt5.QtGui import QPixmap, QImage, QMouseEvent, QPainter, QColor, QPen
-from PyQt5.QtCore import Qt, QObject, pyqtSignal, QUrl, QFileInfo, QTimer
+from PyQt5.QtCore import Qt, QObject, QUrl, QFileInfo, QTimer
 from model import Model
 from functools import partial
 from tkinter import Tk, Toplevel, Button, Entry, Label
@@ -50,21 +50,18 @@ class Window(QWidget):
         self.timeMarks()
         self.importBox()
         self.importPreviewBox()
-        #self.createLabel()
 
         self.timer = QTimer(self)
-        self.newtimer = QTimer(self)
         self.subtitleTimer = QTimer(self)
         self.subStopTimer = QTimer(self)
         
-        #video player creation, move to own definition later
+        # Video player creation, move to own definition later
         self.mediaPlayer = QMediaPlayer(self)
         self.audioPlayer = QMediaPlayer(self)
         self.videoWidget = QVideoWidget(self)
         self.videoWidget.setGeometry(700,20,600,400)
         self.mediaPlayer.setVideoOutput(self.videoWidget)
         self.mediaPlayer.durationChanged.connect(self.durationChanged)
-        #self.mediaPlayer.stateChanged.connect(self.mediaStateChanged)
         self.mediaPlayer.positionChanged.connect(self.positionChanged)
         self.videoWidget.setAspectRatioMode(Qt.KeepAspectRatio)
         self.show()
@@ -72,30 +69,14 @@ class Window(QWidget):
     def initUI(self):
         self.setWindowTitle(self.title)
         self.setGeometry(100, 50, 1700, 900)
-    
-    def paintEvent(self,event):
-        Window.qp.begin(self)
-        self.pen = QPen(Qt.green,5,Qt.SolidLine)
-        Window.qp.setPen(self.pen)
-        self.drawTimeIndicator(Window.qp)
-        Window.qp.end()
-    
-    def drawTimeIndicator(self,qp):
-        if self.totalDuration > 0:
-            qp.fillRect(20,585,2,255, Qt.transparent)
-        else:
-            qp.drawRect(20,585,2,255)
-        while self.mediaPlayer.state == QMediaPlayer.PlayingState:
-            Window.time += 10
-            qp.drawRect(20 * Window.time, 585, 2, 255)
-            #qp.fillRect(20 * Window.time - 1, 585, 2, 255)
             
-    #creates the box for the import list, default box
+    # Creates the box for the import list, default box
     def importBox(self):
         self.importBoxLabel = QLabel(self)
         self.importBoxLabel.setStyleSheet("border: 2px solid black")
         self.importBoxLabel.setGeometry(20,20,300,400)
-    #creates the actual box containing the list of imports
+        
+    # Creates the actual box containing the list of imports
     def importBoxList(self,fname):
         Model.importList.append(QPushButton("",self))
         Model.importList[len(Model.videoList)-1].setStyleSheet("border: 2px solid black")
@@ -103,7 +84,8 @@ class Window(QWidget):
         Model.importList[len(Model.videoList)-1].setGeometry(20,20+(20*(len(Model.videoList)-1)),300,20)
         Model.importList[len(Model.videoList)-1].clicked.connect(partial(self.importClicked, len(Model.videoList)-1))
         Model.importList[len(Model.videoList)-1].show()
-    
+
+    # Creates the box containing the list of imporsts
     def importAudioList(self,aname):
         Model.importAudioList.append(QPushButton("",self))
         Model.importAudioList[len(Model.audioList)-1].setStyleSheet("border: 2px solid black")
@@ -112,7 +94,7 @@ class Window(QWidget):
         Model.importAudioList[len(Model.audioList)-1].clicked.connect(partial(self.importAudioClicked,len(Model.audioList)-1))
         Model.importAudioList[len(Model.audioList)-1].show()
     
-    #creates a box for the preview of each import. TODO: show the thumbnail of each import and details.
+    # Creates a box for the preview of each import. TODO: show the thumbnail of each import and details.
     def importPreviewBox(self):
         self.previewBox = QLabel(self)
         self.previewBox.setStyleSheet("Border: 2px solid black")
@@ -139,32 +121,31 @@ class Window(QWidget):
         self.subTimeLineLabel.setStyleSheet("border: 2px solid black")
         self.subTimeLineLabel.setGeometry(20, 790, 1400, 50)
     
-        # timeline audio
+        # Timeline for audio
         self.audioTimeLine = QLabel(self)
         self.audioTimeLine.setStyleSheet("border: 2px solid black")
         self.audioTimeLine.setGeometry(20,720,1400,60)
 
+    # Calculates total duration and convers milliseconds to seconds
     def durationChanged(self, duration):
         self.positionSlider.setRange(0,duration)
         
         if Window.totalDuration == 0:
             self.playTimeLabel = QLabel(self)
         Window.totalDuration += duration
-        #print("Total duration: " + str(Window.totalDuration))
         self.seconds = int(math.floor((duration/1000) % 60))
         self.minutes = int(math.floor((duration/60000) % 60))
         self.hours = int(math.floor((duration/3600000) % 24))
-        #print("Duration: " + str(duration))
 
         self.playTimeLabel.setText(str(self.hours) + ":" + str(self.minutes) + ":" + str(self.seconds))
         self.playTimeLabel.setStyleSheet("font-size: 40px; alignment:center-align")
         self.playTimeLabel.move(450, 500)
         self.playTimeLabel.show()
-        #self.createButton()
         
 
+    # Creates all buttons needed
     def createButtons(self):
-        #List Titles
+        # List Titles
         self.videoTitle = QLabel(self)
         self.videoTitle.setText("Video List")
         self.videoTitle.move(20,0)
@@ -186,7 +167,7 @@ class Window(QWidget):
         self.importButton.move(30, 460)
         self.importButton.clicked.connect(self.importFunction)
         
-        # import audio button
+        # Import audio button
         self.importAudioButton = QPushButton("Import Audio",self)
         self.importAudioButton.setStyleSheet("background-color: gray")
         self.importAudioButton.move(30,490)
@@ -197,21 +178,16 @@ class Window(QWidget):
         self.addSubtitleButton.move(800, 500)
         self.addSubtitleButton.clicked.connect(self.addSubtitles)
         
-        self.stopbutton = QPushButton("stop",self)
-        self.stopbutton.setStyleSheet("background-color: gray")
-        self.stopbutton.move(1000,500)
-        self.addSubtitleButton.clicked.connect(self.stopall)
-
         # Move to timeline button
         self.moveButton = QPushButton("Video to Timeline", self)
         self.moveButton.setStyleSheet("background-color: gray")
         self.moveButton.move(300, 460)
-        self.moveButton.clicked.connect(self.createButton)
+        self.moveButton.clicked.connect(self.showOnTimeLine)
         self.moveButton.setEnabled(False)
         self.moveButton.setHidden(True)
         
         
-        #move audio to timeline
+        # Move audio to timeline
         self.moveAudio = QPushButton("Audio to Timeline",self)
         self.moveAudio.setStyleSheet("background-color:gray")
         self.moveAudio.move(300,490)
@@ -242,7 +218,7 @@ class Window(QWidget):
         self.moveAuOn.setHidden(True)
         
     
-        #qlineedit
+        # Qlineedit
         self.positioningRequest = QLineEdit(self)
         self.positioningRequest.setPlaceholderText("Enter Position(seconds)")
         self.positioningRequest.move(150,460)
@@ -260,9 +236,8 @@ class Window(QWidget):
         self.positionSlider.sliderMoved.connect(self.setPosition)
         self.positionSlider.setGeometry(20, 585, 1400, 130)
     
-    
+    # Time line tracker
     def positionChanged(self,position):
-        print('Position: ' + str(position))
         self.positionSlider.setValue(position / 40)
         self.positionSlider.show()
     
@@ -270,8 +245,7 @@ class Window(QWidget):
     def setPosition(self,position):
         self.mediaPlayer.setPosition(position)
     
-    
-        #creates labels/buttons, as the thumbnails of each video imported, TODO:implement with import list as proxy
+    # Creates labels/buttons, as the thumbnails of each video imported
     def moveOnTimeline(self):
         position = int(self.positioningRequest.text())
     
@@ -280,7 +254,8 @@ class Window(QWidget):
         Model.positionarray[currentIndex].timepos = position
         self.update()
         Model.od = sorted(Model.positionarray,key=lambda x: x.timepos)
-    
+
+    # Allows users to move audio files to time line
     def moveAudioOnTime(self):
         Model.soundPosition = int(self.audioPosition.text())
         currentAudioIndex = Model.currentAudioTimeIndex
@@ -288,14 +263,12 @@ class Window(QWidget):
         
         self.update()
     
-    
-    
+    # Creates the thumnail of an audio file in the time line
     def createAudioThumbs(self):
         
         Model.audioThumbList.append(QPushButton(str(Model.audioCurrent+1),self))
         Model.soundPosition = int(self.audioPosition.text())
         self.audioDuration= self.mediaPlayer.duration()
-
 
         #Added minutes
         self.audioSeconds = int(round((self.audioDuration/1000)))
@@ -308,10 +281,9 @@ class Window(QWidget):
 
         self.moveAudio.setEnabled(False)
 
-
-    def createButton(self):
+    # Shows the labels we see in time line
+    def showOnTimeLine(self):
         Model.videoDuration = self.mediaPlayer.duration()
-        #Model.videoListLength.append(self.videoDuration)
         Model.buttonList.append(QPushButton(str(Model.current+1),self))
         self.position = int(self.positioningRequest.text())
         Window.totalDuration += self.position * 1000
@@ -329,7 +301,7 @@ class Window(QWidget):
         Model.buttonList[len(Model.buttonList)-1].clicked.connect(partial(self.timelinetoVid, len(Model.buttonList)-1))
         Model.buttonList[len(Model.buttonList)-1].show()
         
-        #writes to a text file to create a list for the ffmpeg comman
+        # Writes to a text file to create a list for the ffmpeg comman
         #self.file = open(r'bin/text.txt','a+')
         #windows
         self.file = open(r'bin\text.txt','w+')
@@ -347,7 +319,8 @@ class Window(QWidget):
         self.playButton.setEnabled(True)
         self.saveVideo.setEnabled(True)
         self.update()
-    
+
+    # Plays/pauses the media files depending on the state
     def play(self):
         if Model.timelineState == False:
             if self.mediaPlayer.state() != QMediaPlayer.PlayingState:
@@ -414,26 +387,8 @@ class Window(QWidget):
                     Model.subTimePause = self.subtitleTimer.remainingTime()
                     self.subtitleTimer.stop()
                     Model.subList[Model.subtitleIndex - 1].setHidden(True)
-                    
-            self.newtimer.start(1)
-            self.newtimer.timeout.connect(self.moveIndicator)
-            
-        
 
-    def moveIndicator(self):
-        Window.temptime = self.newtimer.remainingTime()
-  
-        Window.qp.drawLine(20 + Window.temptime,585,20 + Window.temptime,840)
-        #self.repaint()
-
-        temptime = 0
-        time = 0
-        temptime = self.newtimer.remainingTime()
-        time += temptime
-        self.qp.drawLine(20+time,585,20+time,840)
-        self.timeLineLabel.repaint()
-
-
+    # Plays the next video in the time line
     def playNext(self):
         Model.tempIndex += 1
         if Model.tempIndex < len(Model.od):
@@ -442,6 +397,7 @@ class Window(QWidget):
         else:
             print("video done")
             self.timer.stop()
+
     def playAudio(self):
         self.audioPlayer.play()
     
@@ -449,7 +405,7 @@ class Window(QWidget):
         self.timer.stop()
         self.mediaPlayer.stop()
         self.audioPlayer.stop()
-    #
+    # Shows the first subtitle but never hides it
     def playSubtitles(self):
         if Model.subtitleIndex == 0:
             Model.subList[Model.subtitleIndex].setHidden(False)
@@ -457,21 +413,19 @@ class Window(QWidget):
             Model.subList[Model.subtitleIndex].setHidden(False)
             Model.subList[Model.subtitleIndex - 1].setHidden(True)
         Model.subtitleIndex += 1
-    #   
     
-    # import function to get the urls needed to display in the mediaplayer widget
+    # Import function to get the urls needed to display in the mediaplayer widget
     def importFunction(self):
         #Model.fname, _ = QFileDialog.getOpenFileName(self, 'Open file', '../desktop','All files(*.jpeg *.mp4 *.mov);;Image files(*.jpeg);;Video Files(*.mp4 *.mov)')
         #windows
         Model.fname, _ = QFileDialog.getOpenFileName(self, 'Open file', '..\desktop','All files(*.jpeg *.mp4 *.mov);;Image files(*.jpeg);;Video Files(*.mp4 *.mov)')
         if Model.fname != '':
             Model.videoList.append(Model.fname)
-            # print(Model.videoList)
             fi = QFileInfo(Model.fname)
             base = fi.completeBaseName()
-            #print(base)
             self.importBoxList(base)
 
+    # Imports audio files that are searched on local drive
     def importAudioFunction(self):
         #Model.aname, _ = QFileDialog.getOpenFileName(self, 'Open audio file', '../desktop','All audio files(*.mp3 *.wav)')
         #windows
@@ -482,9 +436,7 @@ class Window(QWidget):
             base = fi.completeBaseName()
             self.importAudioList(base)
 
-
-
-
+    # When audio in time line is clicked, allows users to play whatever is on time line
     def audioTimeLineClicked(self,index):
         Model.tempIndex = 0
         Model.timelineState = True
@@ -509,7 +461,7 @@ class Window(QWidget):
         n =0
         #self.playButton.setEnabled(True)
         Model.tempIndex = 0
-        #highlighting
+        # Highlighting
         Model.timelineState = True
         
         self.cleanImportLists()
@@ -529,15 +481,16 @@ class Window(QWidget):
         self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(Model.videoList[Model.od[Model.tempIndex].index])))
         if Model.od[0].timepos != 0:
             self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(r"blackvid.mp4")))
-        #self.mediaPlayer.play()
         self.enabelSlider()
-        
+
+    # Gets the delays between videos to use for ffmpeg
     def getDelays(self):
         if Model.i <len(Model.od)-1:
             Model.delayTimes.append(Model.od[Model.i+1].timepos - ((Model.od[Model.i].duration)/1000 + Model.od[Model.i].timepos))
 
+    # Allows user to save and compile all the media files into one.
     def exportFile(self):
-        #FFMPEG command, runs the application from the OS to concactenate media files. TODO: fix the usage of different format/codec files
+        # FFMPEG command, runs the application from the OS to concactenate media files. TODO: fix the usage of different format/codec files
         #ffmpeg_command = ["ffmpeg","-y","-f","concat","-safe","0","-i",r"bin/text.txt","-vf","scale=1280:720","-acodec","copy",r"bin/output.mp4"]
         #windows mode
         ffmpeg_command = ["ffmpeg","-y","-f","concat","-safe","0","-i",r"bin\text.txt","-vf","scale=1280:720","-acodec","copy",r"bin\output.mp4"]
@@ -548,13 +501,8 @@ class Window(QWidget):
         
         ffmpeg_subtitles = ["ffmpeg","-y","-i",r"bin\needSubs.mp4","-i",r"bin\subtitles.srt","-c:v","libx264","-ar","44100","-ac","2","-ab","128k","-strict","-2","-c:s","mov_text","-map","0","-map","1",r"bin\finalVid.mp4"]
         s = subprocess.Popen(ffmpeg_subtitles,stdout=subprocess.PIPE)
-        
-        #out1,err1 = s.communicate()
-        #out1,err1 = p.communicate()
-        #out2,err2 = a.communicate()
     
-
-    #highlighting for each item clicked on importlist
+    # Highlighting for each item clicked on importlist
     def importClicked(self,index):
         Model.importBoxState = 0
         Model.timelineState = False
@@ -574,7 +522,7 @@ class Window(QWidget):
         self.enableMove()
         self.positionSlider.setEnabled(True)
         
-
+    # Highlights each audio file clicked
     def importAudioClicked(self,index):
         Model.timelineState = False
         Model.importBoxState =1
@@ -595,27 +543,22 @@ class Window(QWidget):
         self.enableAudio()
         self.positionSlider.setEnabled(True)
     
-
-
+    # Cleans up highlighting so only one is highlighted
     def cleanImportLists(self):
         for i in range(len(Model.importList)):
             Model.importList[i].setStyleSheet("border: 2px solid black")
         for i in range(len(Model.importAudioList)):
             Model.importAudioList[i].setStyleSheet("border: 2px solid black")
         self.setFocus()
+
     def cleanTimeline(self):
         for i in range(len(Model.buttonList)):
             Model.buttonList[i].setStyleSheet("border: 2px solid black")
         for i in range(len(Model.audioThumbList)):
             Model.audioThumbList[i].setStyleSheet("Border:2px solid black")
         self.setFocus()
-    
-    def timelinetoVid2(self):
-        print("vid2")
-    
 
-
-    #creates the timeline
+    # Creates the time markers for time line
     def timeMarks(self):
         self.markers = QLabel(self)
         self.markers.setGeometry(20, 555, 1400, 30)
@@ -655,13 +598,6 @@ class Window(QWidget):
             self.markerLabel.setStyleSheet("font: 15px; color: purple")
             self.markValue += 5
         
-
-
-
-
-    #deletes videolist file on exit
-
-
     # Creates a new window with a text box to enter subtitles
     def addSubtitles(self):
         self.root = Tk()
@@ -779,14 +715,13 @@ class Window(QWidget):
     def destroySecondWindow(self):
         self.root.destroy()
 
-    #deletes videolist file on exit
+    # Deletes videolist file on exit
     @atexit.register
     def goodbye():
         #file = open('bin/text.txt','w+')
         #windows
         file = open('bin\text.txt','w+')
         file.truncate()
-        #windows
         """
         if os.path.isfile('bin\output.mp4'):
             os.remove('bin\output.mp4')
